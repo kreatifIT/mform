@@ -672,6 +672,40 @@ class MFormParser extends AbstractMFormParser
     }
 
     /**
+     * yform-data
+     * @param MFormItem $item
+     * @return $this
+     * @author Kreatif GmbH
+     */
+    private function generateYformTableDataElement(MFormItem $item)
+    {
+        // create label element
+        $label = new MFormElement();
+        $label->setId($item->getId())
+            ->setValue($item->getLabel());
+
+        // create templateElement object
+        $templateElement = new MFormElement();
+        $templateElement->setLabel($this->parseElement($label, 'label', true));
+
+        $args = $item->getParameter();
+
+        switch ($item->getType()) {
+            default:
+            case 'yform-table-data':
+                $templateElement->setElement(rex_var_yform_table_data::getWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $item->getValue(), $args));
+            break;
+            case 'yform-table-data-list':
+                $templateElement->setElement(rex_var_yform_table_data::getListWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $item->getValue(), $args));
+            break;
+        }
+
+        // add to output element array
+        $this->elements[] = $this->parseElement($templateElement, 'default');
+        return $this;
+    }
+
+    /**
      * @param MFormItem[] $items
      * @return $this
      * @author Joachim Doerr
@@ -734,6 +768,10 @@ class MFormParser extends AbstractMFormParser
                     case 'media':
                     case 'medialist':
                         $this->generateMediaElement($item);
+                        break;
+                    case 'yform-table-data':
+                    case 'yform-table-data-list':
+                        $this->generateYformTableDataElement($item);
                         break;
                 }
             }

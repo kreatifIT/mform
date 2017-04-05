@@ -413,6 +413,32 @@ abstract class AbstractMForm
     }
 
     /**
+     * add yform data field
+     * @param $id
+     * @param array $parameter
+     * @param array $attributes
+     * @return AbstractMForm
+     * @author Kreatif GmbH
+     */
+    public function addYformTableDataField($id, $parameter = array(), $attributes = array())
+    {
+        return $this->addElement('yform-table-data', $id, NULL, $attributes, array(), $parameter);
+    }
+
+    /**
+     * add yform data list field
+     * @param $id
+     * @param array $parameter
+     * @param array $attributes
+     * @return AbstractMForm
+     * @author Kreatif GmbH
+     */
+    public function addYformTableDataListField($id, $parameter = array(), $attributes = array())
+    {
+        return $this->addElement('yform-table-data-list', $id, NULL, $attributes, array(), $parameter);
+    }
+
+    /**
      * @param $label
      * @author Joachim Doerr
      * @return $this
