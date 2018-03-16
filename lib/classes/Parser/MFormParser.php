@@ -821,6 +821,12 @@ class MFormParser
                 WHERE id IN(' . implode(',', $value) . ')
             ');
         }
+        if (count($item->getVarId()) > 2) {
+            $id = $item->getVarId()[1];
+        }
+        else {
+            $id = $item->getVarId()[0];
+        }
 
         switch ($item->getType()) {
             default:
@@ -831,11 +837,11 @@ class MFormParser
                     $args['valueName'] = $result['name'];
                     break;
                 }
-                $templateElement->setElement(rex_var_yform_table_data::getWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $value, $args));
+                $templateElement->setElement(rex_var_yform_table_data::getWidget($id, 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $value, $args));
                 break;
             case 'yform-table-data-list':
                 $args['options'] = $results;
-                $templateElement->setElement(rex_var_yform_table_data::getListWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', implode(',', $value), $args));
+                $templateElement->setElement(rex_var_yform_table_data::getListWidget($id, 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', implode(',', $value), $args));
                 break;
         }
 
