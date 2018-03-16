@@ -1,6 +1,6 @@
 <?php
 /**
- * @author mail[at]joachim-doerr[dot]com Joachim Doerr
+ * @author mail[at]doerr-softwaredevelopment[dot]com Joachim Doerr
  * @package redaxo5
  * @license MIT
  */
@@ -34,6 +34,24 @@ class MFormAttributeHandler
                 break;
             case 'full': // set full for markitup or redactor fields to use the default_full template
                 $item->setFull(true);
+                break;
+            case 'form-item-col-class':
+                $item->setFormItemColClass($value);
+                break;
+            case 'label-col-class':
+                $item->setLabelColClass($value);
+                break;
+            case 'info-collapse':
+                $item->setInfoCollapse($value);
+                break;
+            case 'info-tooltip':
+                $item->setInfoTooltip($value);
+                break;
+            case 'info-collapse-icon':
+                $item->setInfoCollapseIcon($value);
+                break;
+            case 'info-tooltip-icon':
+                $item->setInfoTooltipIcon($value);
                 break;
             case 'multiple': // flag the multiple fields
                 $item->setMultiple(true);

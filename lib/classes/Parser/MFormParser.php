@@ -1,26 +1,35 @@
 <?php
 /**
- * @author mail[at]joachim-doerr[dot]com Joachim Doerr
+ * @author mail[at]doerr-softwaredevelopment[dot]com Joachim Doerr
  * @package redaxo5
  * @license MIT
  */
 
-class MFormParser extends AbstractMFormParser
+class MFormParser
 {
     /**
-     * create the fieldset open element
-     * fieldset open
+     * @var array
+     */
+    protected $elements = array();
+
+    /**
+     * @var string
+     * TODO use it later for custom theme in new MForm()
+     */
+    protected $theme;
+
+    /**
+     * @var bool
+     */
+    protected $acc = false;
+
+    /**
      * @param MFormItem $item
      * @return $this
      * @author Joachim Doerr
      */
     private function generateFieldset(MFormItem $item)
     {
-        // if it the first fieldset ? no close the parent
-        if ($this->fieldset === true) {
-            $this->closeFieldset();
-        }
-
         // set default class for r5 mform default theme
         MFormItemManipulator::setDefaultClass($item);
 
@@ -38,109 +47,189 @@ class MFormParser extends AbstractMFormParser
 
         // add fieldset open element to elements list
         $this->elements[] = $this->parseElement($fieldsetElement, 'fieldset-open', true);
-        $this->fieldset = true; // fieldset is open
         return $this;
     }
 
     /**
-     * create the fieldset close element
-     * fieldset close
      * @return $this
      * @author Joachim Doerr
      */
     private function closeFieldset()
     {
-        // if fieldset property true
-        if ($this->fieldset === true) {
-            $this->fieldset = false; // fieldset is closed
-            // add fieldset close element to elements list
-            $this->elements[] = $this->parseElement(new MFormElement(), 'fieldset-close', true); // use parse element to load template file
+        $this->elements[] = $this->parseElement(new MFormElement(), 'fieldset-close', true); // use parse element to load template file
+        return $this;
+    }
+
+    /**
+     * @param MFormItem $item
+     * @param int $key
+     * @param array $items
+     * @author Joachim Doerr
+     * @return MFormParser
+     */
+    private function generateTabGroup(MFormItem $item, $key, array $items)
+    {
+        $nav = array();
+
+        /** @var MFormItem $itm */
+        foreach ($items as $k => $itm) {
+            if ($k > $key && ($itm->getGroup() == $item->getGroup() && $itm->getType() == 'tab')) {
+                // add navigation item
+                $class = '';
+                $value = '';
+                $element = new MFormElement();
+                $element->setId('tabgr' . $itm->getGroup() . 'tabid' . $itm->getGroupCount() . '_' . $_SESSION['mform_count']);
+
+                if (array_key_exists('tab-icon', $itm->getAttributes()))
+                    $value = '<i class="rex-icon ' . $itm->getAttributes()['tab-icon'] . '"></i> ';
+
+                $element->setValue($value . $itm->getValue());
+
+                if (array_key_exists('pull-right', $itm->getAttributes()))
+                    $class = 'pull-right';
+
+                if ($itm->getGroupCount() == 1)
+                    $class .= ' active';
+
+                $element->setClass($class);
+
+                $nav[] = $this->parseElement($element, 'tabnavli', true); // use parse element to load template file
+            }
+        }
+
+        $element = new MFormElement();
+        $element->setElement(implode('', $nav))
+            ->setAttributes($this->parseAttributes($item->getAttributes()));
+
+        $this->elements[] = $this->parseElement($element, 'tabgroup-open', true); // use parse element to load template file
+        return $this;
+    }
+
+    /**
+     * @param MFormItem $item
+     * @author Joachim Doerr
+     * @return MFormParser
+     */
+    private function generateTab($item)
+    {
+        $element = new MFormElement();
+        $element->setId('tabgr' . $item->getGroup() . 'tabid' . $item->getGroupCount() . '_' . $_SESSION['mform_count']);
+
+        if ($item->getGroupCount() == 1)
+            $element->setClass('active');
+
+        $this->elements[] = $this->parseElement($element, 'tab-open', true); // use parse element to load template file
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @author Joachim Doerr
+     */
+    private function closeTab()
+    {
+        $this->elements[] = $this->parseElement(new MFormElement(), 'tab-close', true); // use parse element to load template file
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @author Joachim Doerr
+     */
+    private function closeTabGroup()
+    {
+        $this->elements[] = $this->parseElement(new MFormElement(), 'tabgroup-close', true); // use parse element to load template file
+        return $this;
+    }
+
+    /**
+     * @param MFormItem $item
+     * @return $this
+     * @author Joachim Doerr
+     */
+    private function generateCollapseGroup(MFormItem $item)
+    {
+        if (isset($item->getAttributes()['data-group-accordion']) && $item->getAttributes()['data-group-accordion'] == 1) {
+            $this->acc = true;
+            $element = new MFormElement();
+            $element->setAttributes($this->parseAttributes($item->getAttributes()))
+                ->setId('accgr' . $item->getGroup() . '_' . $_SESSION['mform_count']);
+            $this->elements[] = $this->parseElement($element, 'accordion-open', true); // use parse element to load template file
         }
         return $this;
     }
 
     /**
      * @param MFormItem $item
-     * @param $key
-     * @param MFormItem[] $items
+     * @return $this
      * @author Joachim Doerr
      */
-    private function generateTab($item, $key, $items)
+    private function generateCollapse(MFormItem $item)
     {
-        // close fieldset for open tab group
-        if ($this->fieldset)
-            $this->closeFieldset();
-
-            // is flag tab true
-        if ($this->tab)
-            $this->closeTab(); // close open tab
-
-        if ($this->tabGroup == 0) {
-            // open tab group
-            $this->tabGroup = $item->getTabGroup();
-
-            $nav = array();
-            foreach ($items as $itm) {
-                if ($itm->getTabGroup() == $this->tabGroup && $itm->tabCount > 0) {
-                    $element = new MFormElement();
-                    $element->setId('tabg' . $itm->getTabGroup() . 'tabid' . $itm->getTabCount());
-                    $element->setValue($itm->getValue());
-
-                    if ($itm->getTabCount()==1)
-                        $element->setClass('active');
-
-                    $nav[] = $this->parseElement($element, 'tabnavli', true); // use parse element to load template file
-                }
-            }
-
-            $element = new MFormElement();
-            $element->setElement(implode('', $nav));
-            $this->elements[] = $this->parseElement($element, 'tabgroup-open', true); // use parse element to load template file
+        // is id in attr not set set an unique id
+        if (!isset($item->getAttributes()['id'])) {
+            $item->attributes['id'] = 'colgr' . $item->getGroup() . 'colid' . $item->getGroupCount() . '_' . $_SESSION['mform_count'];
         }
 
-        // open tab
-        $element = new MFormElement();
-        $element->setId('tabg' . $item->getTabGroup() . 'tabid' . $item->getTabCount());
+        // create collapse open element
+        $collapseElement = new MFormElement();
+        $collapseElement->setAttributes($this->parseAttributes($item->getAttributes())) // add attributes to collapse element
+            ->setId($item->getAttributes()['id']); // set collapse id
 
-        if ($item->getTabCount() == 1)
-            $element->setClass('active');
+        if (array_key_exists('data-group-collapse', $item->getAttributes())) {
+            $collapseElement->setClass($item->getAttributes()['data-group-collapse']);
+        }
 
-        $this->elements[] = $this->parseElement($element, 'tab-open', true); // use parse element to load template file
-        $this->tab = true;
+        // not class given set default button class
+        if (empty($item->getClass())) {
+            $item->setClass('btn btn-white btn-block');
+        }
+
+        if (empty($item->getValue()) or (array_key_exists('data-group-hide-toggle-links', $item->getAttributes()) && $item->getAttributes()['data-group-hide-toggle-links'] == 'true')) {
+            $item->setClass($item->getClass() . ' hidden');
+        }
+
+        $target = ($this->acc && isset($item->getAttributes()['data-group-accordion']) && $item->getAttributes()['data-group-accordion'] == 1) ? ' data-parent="#accgr' . $item->getGroup() . '_' . $_SESSION['mform_count'] . '"' : '';
+        $collapseButton = new MFormElement();
+        $collapseButton->setClass($item->getClass())
+            ->setAttributes('data-toggle="collapse" data-target="#' . $item->getAttributes()['id'] . '"' . $target)
+            ->setValue($item->getValue());
+
+        $collapseElement->setLegend($this->parseElement($collapseButton, 'collapse-button', true)); // add parsed legend to collapse element
+
+        $collapseTemplate = ($this->acc && isset($item->getAttributes()['data-group-accordion']) && $item->getAttributes()['data-group-accordion'] == 1) ? 'accordion-collapse-open' : 'collapse-open';
+
+        // add collapse open element to elements list
+        $this->elements[] = $this->parseElement($collapseElement, $collapseTemplate, true);
+        return $this;
     }
 
     /**
-     * @param MFormItem|null $item
-     * @param int|null $key
-     * @param MFormItem[]|array $items
-     * @param bool $finalClose
+     * @param MFormItem $item
+     * @return $this
      * @author Joachim Doerr
      */
-    private function closeTab($item = null, $key = null, $items = array(), $finalClose = false)
+    private function closeCollapse(MFormItem $item)
     {
-        // close open tab by flag
-        // next item is from our tab group
-        if ($this->tab) {
-            if ($this->fieldset)
-                $this->closeFieldset();
+        $collapseTemplate = ($this->acc) ? 'accordion-collapse-close' : 'collapse-close';
+        $this->elements[] = $this->parseElement(new MFormElement(), $collapseTemplate, true); // use parse element to load template file
+        return $this;
+    }
 
-            $this->tab = false;
-            $this->elements[] = $this->parseElement(new MFormElement(), 'tab-close', true); // use parse element to load template file
+    /**
+     * @param MFormItem $item
+     * @return $this
+     * @author Joachim Doerr
+     */
+    private function closeCollapseGroup(MFormItem $item)
+    {
+        if ($this->acc) {
+            $this->acc = false;
+            $this->elements[] = $this->parseElement(new MFormElement(), 'accordion-close', true); // use parse element to load template file
         }
 
-        // final? by item?
-        if (!is_null($item) &&
-            (
-                (isset($items[$key+1]) && $items[$key+1]->tabGroup != $this->tabGroup)
-                or (!isset($items[$key+1])) // close tab is latest element
-            ))
-            $finalClose = true;
-
-        // final close wrapper
-        if ($finalClose) {
-            $this->tabGroup = 0;
-            $this->elements[] = $this->parseElement(new MFormElement(), 'tabgroup-close', true); // use parse element to load template file
-        }
+        return $this;
     }
 
     /**
@@ -154,7 +243,9 @@ class MFormParser extends AbstractMFormParser
     {
         // create templateElement object
         $element = new MFormElement();
-        $element->setOutput($item->getValue()); // set output to replace in template
+        $element->setOutput($item->getValue())
+            ->setAttributes($this->parseAttributes($item->getAttributes()))
+            ->setClass($item->getClass()); // set output to replace in template
         // add to output element array
         $this->elements[] = $this->parseElement($element, $item->getType());
         return $this;
@@ -189,17 +280,22 @@ class MFormParser extends AbstractMFormParser
             $templateType = $templateType . '_full'; // add _full to template type
         }
 
+        // set custom template type
+        if (!empty($item->getLabelColClass()) && !empty($item->getFormItemColClass()) && $templateType == 'default') {
+            $templateType = $templateType . '_custom'; // add custom to template type
+        }
+
         // datalist?
         if ($item->getOptions()) {
-            $item->setAttributes(array_merge($item->getAttributes(), array('list' => 'list'.$item->getId())));
+            $item->setAttributes(array_merge($item->getAttributes(), array('list' => 'list' . $item->getId())));
 
             $optionElements = '';
             foreach ($item->getOptions() as $key => $value) {
-                $optionElements .= $this->createOptionElement($item, $value, (!is_integer($key))?"label=\"$key\"":'', 'datalist-option', false);
+                $optionElements .= $this->createOptionElement($item, $value, (!is_integer($key)) ? "label=\"$key\"" : '', 'datalist-option', false);
             }
             $element = new MFormElement();
             $element->setOptions($optionElements)
-                ->setId('list'.$item->getId());
+                ->setId('list' . $item->getId());
             $datalist = $this->parseElement($element, 'datalist', true);
         }
 
@@ -219,15 +315,13 @@ class MFormParser extends AbstractMFormParser
             ->setDatalist($datalist)
             ->setAttributes($this->parseAttributes($item->getAttributes())); // parse attributes for use in templates
 
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
-
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true))
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true))
             ->setElement($this->parseElement($element, 'text', true));
+
+        // add classes for custom type
+        $this->getDefaultTemplateType($item, $templateElement);
 
         // add to output element array
         $this->elements[] = $this->parseElement($templateElement, $templateType);
@@ -259,6 +353,11 @@ class MFormParser extends AbstractMFormParser
             $templateType = $templateType . '_full'; // add _full to template type
         }
 
+        // set custom template type
+        if (!empty($item->getLabelColClass()) && !empty($item->getFormItemColClass()) && $templateType == 'default') {
+            $templateType = $templateType . '_custom'; // add custom to template type
+        }
+
         // default manipulations
         MFormItemManipulator::setVarAndIds($item); // transform ids for template usage
         MFormItemManipulator::setCustomId($item); // set optional custom id
@@ -274,15 +373,13 @@ class MFormParser extends AbstractMFormParser
             ->setClass($item->getClass())
             ->setAttributes($this->parseAttributes($item->getAttributes()));
 
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
-
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true))
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true))
             ->setElement($this->parseElement($element, 'textarea', true));
+
+        // add classes for custom type
+        $this->getDefaultTemplateType($item, $templateElement);
 
         // add to output element array
         $this->elements[] = $this->parseElement($templateElement, $templateType);
@@ -361,18 +458,16 @@ class MFormParser extends AbstractMFormParser
             $element->setVarId($item->getVarId() . '[]');
         }
 
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
-
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true))
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true))
             ->setElement($this->parseElement($element, 'select', true));
 
+        // add classes for custom type
+        $templateType = $this->getDefaultTemplateType($item, $templateElement);
+
         // add to output element array
-        $this->elements[] = $this->parseElement($templateElement, 'default');
+        $this->elements[] = $this->parseElement($templateElement, $templateType);
         return $this;
     }
 
@@ -390,8 +485,8 @@ class MFormParser extends AbstractMFormParser
     {
         // create element
         $element = new MFormElement();
-        $element->setValue($key) // set option key
-            ->setLabel($value); // set option label
+        $element->setValue($key)// set option key
+        ->setLabel($value); // set option label
 
         $itemValue = $item->getValue();
 
@@ -433,27 +528,26 @@ class MFormParser extends AbstractMFormParser
         if (sizeof($item->getOptions()) > 0) {
             // is multiple flag true
             // if ($item->isMultiple()) {
-                // TODO add hidden field and javascript and so fare
-                // TODO add text element
+            // TODO add hidden field and javascript and so fare
+            // TODO add text element
             // } else {
-                foreach ($item->getOptions() as $key => $value) {
-                    $checkboxElements .= $this->createCheckElement($item, $key, $value); // create element by helper
-                    break;
-                }
+            foreach ($item->getOptions() as $key => $value) {
+                $checkboxElements .= $this->createCheckElement($item, $key, $value); // create element by helper
+                break;
+            }
             //}
         }
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
 
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true))
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true))
             ->setElement($checkboxElements);
 
+        // add classes for custom type
+        $templateType = $this->getDefaultTemplateType($item, $templateElement);
+
         // add to output element array
-        $this->elements[] = $this->parseElement($templateElement, 'default');
+        $this->elements[] = $this->parseElement($templateElement, $templateType);
         return $this;
     }
 
@@ -483,7 +577,9 @@ class MFormParser extends AbstractMFormParser
         }
         // set checked by value or default value
         if ($key == $item->getValue() or ($item->getMode() == 'add' && $key == $item->getDefaultValue())) {
-            $element->setAttributes(' checked="checked"');
+            $element->setAttributes(' checked="checked" ' . $this->parseAttributes($item->getAttributes()));
+        } else {
+            $element->setAttributes($this->parseAttributes($item->getAttributes()));
         }
         // parse element
         return $this->parseElement($element, $item->getType(), true);
@@ -513,18 +609,16 @@ class MFormParser extends AbstractMFormParser
             }
         }
 
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
-
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true))
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true))
             ->setElement($radioElements);
 
+        // add classes for custom type
+        $templateType = $this->getDefaultTemplateType($item, $templateElement);
+
         // add to output element array
-        $this->elements[] = $this->parseElement($templateElement, 'default');
+        $this->elements[] = $this->parseElement($templateElement, $templateType);
         return $this;
     }
 
@@ -536,14 +630,9 @@ class MFormParser extends AbstractMFormParser
      */
     private function generateMediaElement(MFormItem $item)
     {
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
-
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true));
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true));
 
         switch ($item->getType()) {
             default:
@@ -555,8 +644,11 @@ class MFormParser extends AbstractMFormParser
                 break;
         }
 
+        // add classes for custom type
+        $templateType = $this->getDefaultTemplateType($item, $templateElement);
+
         // add to output element array
-        $this->elements[] = $this->parseElement($templateElement, 'default');
+        $this->elements[] = $this->parseElement($templateElement, $templateType);
         return $this;
     }
 
@@ -571,16 +663,11 @@ class MFormParser extends AbstractMFormParser
         // default manipulations
         MFormItemManipulator::setVarAndIds($item); // transform ids for template usage
 
-        $item->setId(str_replace(array('_',']','['),'', rand(100,999) . $item->getVarId()));
-
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
+        $item->setId(str_replace(array('_', ']', '['), '', rand(100, 999) . $item->getVarId()));
 
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true));
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true));
 
         $html = rex_var_link::getWidget($item->getId(), 'REX_INPUT_VALUE' . $item->getVarId(), $item->getValue(), $item->getParameter());
 
@@ -588,10 +675,16 @@ class MFormParser extends AbstractMFormParser
         @$dom->loadHTML(utf8_decode($html));
         $div = $dom->getElementsByTagName('div');
 
+        $attributes = $item->getAttributes();
+
         $mediaFragment = $dom->createDocumentFragment();
-        $mediaFragment->appendXML("<a href=\"#\" class=\"btn btn-popup\" id=\"mform_media_{$item->getId()}\" title=\"\"><i class=\"rex-icon fa-file\"></i></a>");
+        $mediaFragment->appendXML("<a href=\"#\" class=\"btn btn-popup\" id=\"mform_media_{$item->getId()}\" title=\"\"><i class=\"rex-icon fa-file-o\"></i></a>");
         $linkFragment = $dom->createDocumentFragment();
         $linkFragment->appendXML("<a href=\"#\" class=\"btn btn-popup\" id=\"mform_extern_{$item->getId()}\" title=\"\"><i class=\"rex-icon fa-external-link\"></i></a>");
+        $mailtoFragment = $dom->createDocumentFragment();
+        $mailtoFragment->appendXML("<a href=\"#\" class=\"btn btn-popup\" id=\"mform_mailto_{$item->getId()}\" title=\"\"><i class=\"rex-icon fa-envelope-o\"></i></a>");
+        $telFragment = $dom->createDocumentFragment();
+        $telFragment->appendXML("<a href=\"#\" class=\"btn btn-popup\" id=\"mform_tel_{$item->getId()}\" title=\"\"><i class=\"rex-icon fa-phone\"></i></a>");
 
         if ($div instanceof DOMNodeList) {
             foreach ($div as $divItem) {
@@ -603,10 +696,18 @@ class MFormParser extends AbstractMFormParser
                     foreach ($divItem->childNodes as $childNode) {
                         if ($childNode->hasAttribute('class') && $childNode->getAttribute('class') == 'input-group-btn') {
                             if ($childNode->hasChildNodes()) {
+
+                                if (!array_key_exists('data-intern', $attributes)) {
+                                    $attributes['data-intern'] = 'enable';
+                                }
+
                                 foreach ($childNode->childNodes as $node) {
                                     if ($node instanceof DOMElement) {
                                         if (strpos($node->getAttribute('onclick'), 'openLinkMap') !== false) {
                                             $node->setAttribute('id', 'mform_link_' . $item->getId());
+                                            if ($attributes['data-intern'] == 'disable') {
+                                                $node->setAttribute('style', 'display:none');
+                                            }
                                         }
                                         if (strpos($node->getAttribute('onclick'), 'deleteREXLink') !== false) {
                                             $node->setAttribute('id', 'mform_delete_' . $item->getId());
@@ -614,19 +715,37 @@ class MFormParser extends AbstractMFormParser
                                         $node->removeAttribute('onclick');
                                     }
                                 }
-                                $childNode->insertBefore($linkFragment, $childNode->firstChild);
-                                $childNode->insertBefore($mediaFragment, $childNode->firstChild);
+
+                                if (!array_key_exists('data-extern', $attributes)) {
+                                    $attributes['data-extern'] = 'enable';
+                                }
+                                if (!array_key_exists('data-media', $attributes)) {
+                                    $attributes['data-media'] = 'enable';
+                                }
+
+                                if ($attributes['data-extern'] == 'enable') {
+                                    $childNode->insertBefore($linkFragment, $childNode->firstChild);
+                                }
+                                if ($attributes['data-media'] == 'enable') {
+                                    $childNode->insertBefore($mediaFragment, $childNode->firstChild);
+                                }
+                                if (array_key_exists('data-mailto', $attributes) && $attributes['data-mailto'] == 'enable') {
+                                    $childNode->insertBefore($mailtoFragment, $childNode->firstChild);
+                                }
+                                if (array_key_exists('data-tel', $attributes) && $attributes['data-tel'] == 'enable') {
+                                    $childNode->insertBefore($telFragment, $childNode->firstChild);
+                                }
                             }
                         }
                         if (($childNode->hasAttribute('class')
-                            && $childNode->getAttribute('class') == 'form-control')
+                                && $childNode->getAttribute('class') == 'form-control')
                             && ($childNode->hasAttribute('value')
-                            && $childNode->getAttribute('value') == '')) {
+                                && $childNode->getAttribute('value') == '')) {
                             $childNode->setAttribute('value', $item->getValue());
                         }
                     }
-//                    $html = utf8_encode($divItem->C14N(false,true));
-                    $html = $divItem->C14N(false,true);
+                    // $html = utf8_encode($divItem->C14N(false,true));
+                    $html = $divItem->C14N(false, true);
                     break;
                 }
             }
@@ -634,8 +753,11 @@ class MFormParser extends AbstractMFormParser
 
         $templateElement->setElement($html);
 
+        // add classes for custom type
+        $templateType = $this->getDefaultTemplateType($item, $templateElement);
+
         // add to output element array
-        $this->elements[] = $this->parseElement($templateElement, 'default');
+        $this->elements[] = $this->parseElement($templateElement, $templateType);
         return $this;
     }
 
@@ -647,14 +769,9 @@ class MFormParser extends AbstractMFormParser
      */
     private function generateLinkElement(MFormItem $item)
     {
-        // create label element
-        $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
-
         // create templateElement object
         $templateElement = new MFormElement();
-        $templateElement->setLabel($this->parseElement($label, 'label', true));
+        $templateElement->setLabel($this->parseElement($this->createLabelElement($item), 'label', true));
 
         switch ($item->getType()) {
             default:
@@ -666,8 +783,11 @@ class MFormParser extends AbstractMFormParser
                 break;
         }
 
+        // add classes for custom type
+        $templateType = $this->getDefaultTemplateType($item, $templateElement);
+
         // add to output element array
-        $this->elements[] = $this->parseElement($templateElement, 'default');
+        $this->elements[] = $this->parseElement($templateElement, $templateType);
         return $this;
     }
 
@@ -716,30 +836,52 @@ class MFormParser extends AbstractMFormParser
             foreach ($items as $key => $item) {
 
                 switch ($item->getType()) {
-                    case 'close-fieldset':
-                        $this->closeFieldset();
-                        break;
+                    // FIELDSET
                     case 'fieldset':
                         $this->generateFieldset($item);
                         break;
-                    case 'close-tab':
-                        $this->closeTab($item, $key, $items);
+                    case 'close-fieldset':
+                        $this->closeFieldset();
+                        break;
+
+                    // TABS
+                    case 'start-group-tab':
+                        $this->generateTabGroup($item, $key, $items);
                         break;
                     case 'tab':
-                        $this->generateTab($item, $key, $items);
+                        $this->generateTab($item);
                         break;
+                    case 'close-tab':
+                        $this->closeTab();
+                        break;
+                    case 'close-group-tab':
+                        $this->closeTabGroup();
+                        break;
+
+                    // COLLAPSE
+                    case 'start-group-collapse':
+                        $this->generateCollapseGroup($item);
+                        break;
+                    case 'collapse':
+                        $this->generateCollapse($item);
+                        break;
+                    case 'close-collapse':
+                        $this->closeCollapse($item);
+                        break;
+                    case 'close-group-collapse':
+                        $this->closeCollapseGroup($item);
+                        break;
+
+
                     case 'html':
                     case 'headline':
                     case 'description':
+                    case 'alert':
                         $this->generateLineElement($item);
                         break;
-//                    case 'callback':
-//                        $this->getCallbackElement($item);
-//                        break;
                     case 'text':
                     case 'hidden':
                     case 'text-readonly':
-                    default:
                         $this->generateInputElement($item);
                         break;
                     case 'markitup':
@@ -780,45 +922,45 @@ class MFormParser extends AbstractMFormParser
     }
 
     /**
-     * @param MFormItem[] $items
+     * @param MFormItem $item
+     * @return MFormElement
      * @author Joachim Doerr
      */
-    private function setTabExtensions($items){
+    private function createLabelElement(MFormItem $item)
+    {
+        $this->createTooltipElement($item);
 
-        $tabGroupCount = 0;
-        $tabCount = 0;
-        $tab = false;
+        $label = new MFormElement();
+        $label->setId($item->getId())
+            ->setValue($item->getLabel());
 
-        // unset array keys
-        $items = array_values($items);
+        return $label;
+    }
 
-        /** @var MFormItem $item */
-        foreach($items as $key => $item) { // key + 1 => count
+    /**
+     * @param $item
+     * @author Joachim Doerr
+     */
+    private function createTooltipElement(MFormItem $item)
+    {
+        // set tooltip
+        if ($item->getInfoTooltip()) {
+            // parse tooltip
+            if (empty($item->getInfoTooltipIcon()))
+                $item->setInfoTooltipIcon('fa-exclamation');
 
-            if ($item->getType() == 'tab') {
-                if (!$tab) {
-                    $tabCount = 1;
-                    $tabGroupCount++;
-                    $tab = true;
-                }
-                // set tabgroup for tab
-                $item->setTabGroup($tabGroupCount);
-                $item->setTabCount($tabCount++);
-            }
+            $tooltip = new MFormElement();
+            $tooltip->setValue($item->getInfoTooltip())
+                ->setInfoTooltipIcon($item->getInfoTooltipIcon());
 
-            // unset tab group is item tab close and next not tab open
-            if ($item->getType() == 'close-tab' && (count($items) >= ($key + 2) && $items[$key+1]->getType() != 'tab')) {
-                // set tabg roup for close element
-                $item->setTabGroup($tabGroupCount);
-                $tab = false;
-            }
+            $item->setLabel($item->getLabel() . $this->parseElement($tooltip, 'tooltip-info', true));
         }
     }
 
     /**
      * final parsing
      * @param MFormItem[] $items
-     * @param null $theme
+     * @param null|string $theme
      * @param bool $debug
      * @return string
      * @author Joachim Doerr
@@ -832,34 +974,26 @@ class MFormParser extends AbstractMFormParser
             MFormThemeHelper::themeBootCheck($theme);
             // add css
             // use theme helper class
-            if(sizeof(MFormThemeHelper::getCssAssets($this->theme)) > 0) {
+            if (sizeof(MFormThemeHelper::getCssAssets($this->theme)) > 0) {
                 // foreach all css files
                 foreach (MFormThemeHelper::getCssAssets($this->theme) as $css) {
                     // add assets css file
-                   $this->elements[] = '<link rel="stylesheet" type="text/css" media="all" href="' . rex_url::addonAssets('mform', $css) . '?v=' . rex_addon::get('mform')->getVersion() . '" />';
+                    $this->elements[] = '<link rel="stylesheet" type="text/css" media="all" href="' . rex_url::addonAssets('mform', $css) . '?v=' . rex_addon::get('mform')->getVersion() . '" />';
                 }
             }
         }
 
-        $this->setTabExtensions($items);
-        $this->parseFormFields($items);
-
-        // close tab
-        if ($this->tabGroup > 0 or $this->tab) {
-            $this->closeTab(null, null, array(), true);
-        }
-
-        // close fieldset
-        if ($this->fieldset) {
-            $this->closeFieldset();
-        }
+        $items = MFormGroupExtensionHelper::addTabGroupExtensionItems($items);
+        $items = MFormGroupExtensionHelper::addCollapseGroupExtensionItems($items);
+        $items = MFormGroupExtensionHelper::addAccordionGroupExtensionItems($items);
+        $items = MFormGroupExtensionHelper::addFieldsetGroupExtensionItems($items);
 
         // show for debug items
         if ($debug) {
-            echo '<pre>'.PHP_EOL;
-            print_r($items);
-            echo '</pre>'.PHP_EOL;
+            dump($items);
         }
+
+        $this->parseFormFields($items);
 
         // wrap elements
         $element = new MFormElement();
@@ -867,5 +1001,62 @@ class MFormParser extends AbstractMFormParser
 
         // return output
         return $this->parseElement($element, 'wrapper');
+    }
+
+    /**
+     * @param MFormItem $item
+     * @return string
+     * @author Joachim Doerr
+     */
+    private function getDefaultTemplateType(MFormItem $item, $templateElement)
+    {
+        $templateType = 'default';
+
+        // set default template
+        if (!empty($item->getLabelColClass()) && !empty($item->getFormItemColClass())) {
+            $templateType = $templateType . '_custom'; // add _custom to template type
+            $templateElement->setLabelColClass($item->getLabelColClass())
+                ->setFormItemColClass($item->getFormItemColClass());
+        }
+
+        // is full flag true and template type default
+        if ($item->isFull()) {
+            $templateType = $templateType . '_full'; // add _full to template type
+        }
+
+        return $templateType;
+    }
+
+    /**
+     * @param MFormElement $element
+     * @param string $templateType
+     * @param boolean $subPath
+     * @return mixed
+     * @author Joachim Doerr
+     */
+    private function parseElement(MFormElement $element, $templateType, $subPath = false)
+    {
+        return str_replace(
+            array_merge(array(' />'), $element->getKeys()),
+            array_merge(array('/>'), $element->getValues()),
+            MFormTemplateFileProvider::loadTemplate($templateType, ($subPath) ? MFormTemplateFileProvider::ELEMENTS_PATH : '', $this->theme));
+    }
+
+    /**
+     * @param array $attributes
+     * @return string
+     * @author Joachim Doerr
+     */
+    private function parseAttributes($attributes)
+    {
+        $inlineAttributes = '';
+        if (sizeof($attributes) > 0) {
+            foreach ($attributes as $key => $value) {
+                if (!in_array($key, array('id', 'name', 'type', 'value', 'checked', 'selected'))) {
+                    $inlineAttributes .= ' ' . $key . '="' . $value . '"';
+                }
+            }
+        }
+        return $inlineAttributes;
     }
 }

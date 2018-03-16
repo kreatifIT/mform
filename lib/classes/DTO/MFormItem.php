@@ -1,6 +1,6 @@
 <?php
 /**
- * @author mail[at]joachim-doerr[dot]com Joachim Doerr
+ * @author mail[at]doerr-softwaredevelopment[dot]com Joachim Doerr
  * @package redaxo5
  * @license MIT
  */
@@ -83,14 +83,44 @@ class MFormItem
     public $full;
 
     /**
-     * @var integer
+     * @var string
      */
-    public $tabGroup;
+    public $labelColClass;
+
+    /**
+     * @var string
+     */
+    public $formItemColClass;
 
     /**
      * @var integer
      */
-    public $tabCount;
+    public $group;
+
+    /**
+     * @var integer
+     */
+    public $groupCount;
+
+    /**
+     * @var string
+     */
+    public $infoTooltip;
+
+    /**
+     * @var string
+     */
+    public $infoCollapse;
+
+    /**
+     * @var string
+     */
+    public $infoTooltipIcon;
+
+    /**
+     * @var string
+     */
+    public $infoCollapseIcon;
 
     /**
      * @return string
@@ -363,20 +393,60 @@ class MFormItem
     }
 
     /**
-     * @return int
+     * @return string
+     * @author Joachim Doerr
      */
-    public function getTabGroup()
+    public function getLabelColClass()
     {
-        return $this->tabGroup;
+        return $this->labelColClass;
     }
 
     /**
-     * @param int $tabGroup
+     * @param string $labelColClass
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setLabelColClass($labelColClass)
+    {
+        $this->labelColClass = $labelColClass;
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @author Joachim Doerr
+     */
+    public function getFormItemColClass()
+    {
+        return $this->formItemColClass;
+    }
+
+    /**
+     * @param string $formItemColClass
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setFormItemColClass($formItemColClass)
+    {
+        $this->formItemColClass = $formItemColClass;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getGroup()
+    {
+        return $this->group;
+    }
+
+    /**
+     * @param int $group
      * @return $this
      */
-    public function setTabGroup($tabGroup)
+    public function setGroup($group)
     {
-        $this->tabGroup = $tabGroup;
+        $this->group = $group;
         return $this;
     }
 
@@ -384,19 +454,99 @@ class MFormItem
      * @return int
      * @author Joachim Doerr
      */
-    public function getTabCount()
+    public function getGroupCount()
     {
-        return $this->tabCount;
+        return $this->groupCount;
     }
 
     /**
-     * @param int $tabCount
+     * @param int $groupCount
      * @return $this
      * @author Joachim Doerr
      */
-    public function setTabCount($tabCount)
+    public function setGroupCount($groupCount)
     {
-        $this->tabCount = $tabCount;
+        $this->groupCount = $groupCount;
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @author Joachim Doerr
+     */
+    public function getInfoTooltip()
+    {
+        return $this->infoTooltip;
+    }
+
+    /**
+     * @param string $infoTooltip
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoTooltip($infoTooltip)
+    {
+        $this->infoTooltip = $infoTooltip;
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @author Joachim Doerr
+     */
+    public function getInfoCollapse()
+    {
+        return $this->infoCollapse;
+    }
+
+    /**
+     * @param string $infoCollapse
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoCollapse($infoCollapse)
+    {
+        $this->infoCollapse = $infoCollapse;
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @author Joachim Doerr
+     */
+    public function getInfoTooltipIcon()
+    {
+        return $this->infoTooltipIcon;
+    }
+
+    /**
+     * @param string $infoTooltipIcon
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoTooltipIcon($infoTooltipIcon)
+    {
+        $this->infoTooltipIcon = $infoTooltipIcon;
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @author Joachim Doerr
+     */
+    public function getInfoCollapseIcon()
+    {
+        return $this->infoCollapseIcon;
+    }
+
+    /**
+     * @param string $infoCollapseIcon
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoCollapseIcon($infoCollapseIcon)
+    {
+        $this->infoCollapseIcon = $infoCollapseIcon;
         return $this;
     }
 }

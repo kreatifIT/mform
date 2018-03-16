@@ -1,6 +1,6 @@
 <?php
 /**
- * @author mail[at]joachim-doerr[dot]com Joachim Doerr
+ * @author mail[at]doerr-softwaredevelopment[dot]com Joachim Doerr
  * @package redaxo5
  * @license MIT
  */
@@ -89,6 +89,37 @@ class MFormElement
      * @var string
      */
     public $datalist;
+
+    /**
+     * @var string
+     */
+    public $labelColClass;
+
+    /**
+     * @var string
+     */
+    public $formItemColClass;
+
+    /**
+     * @var string
+     */
+    public $infoTooltipIcon;
+
+    /**
+     * @var string
+     */
+    public $infoTooltip;
+
+    /**
+     * @var string
+     */
+    public $infoCollapseButton;
+
+    /**
+     * @var string
+     */
+    public $infoCollapse;
+
 
     /**
      * @param string $id
@@ -248,6 +279,72 @@ class MFormElement
     public function setDatalist($datalist)
     {
         $this->datalist = $datalist;
+        return $this;
+    }
+
+    /**
+     * @param string $labelColClass
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setLabelColClass($labelColClass)
+    {
+        $this->labelColClass = $labelColClass;
+        return $this;
+    }
+
+    /**
+     * @param string $formItemColClass
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setFormItemColClass($formItemColClass)
+    {
+        $this->formItemColClass = $formItemColClass;
+        return $this;
+    }
+
+    /**
+     * @param string $infoTooltipIcon
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoTooltipIcon($infoTooltipIcon)
+    {
+        $this->infoTooltipIcon = $infoTooltipIcon;
+        return $this;
+    }
+
+    /**
+     * @param string $infoTooltip
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoTooltip($infoTooltip)
+    {
+        $this->infoTooltip = $infoTooltip;
+        return $this;
+    }
+
+    /**
+     * @param string $infoCollapseButton
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoCollapseButton($infoCollapseButton)
+    {
+        $this->infoCollapseButton = $infoCollapseButton;
+        return $this;
+    }
+
+    /**
+     * @param string $infoCollapse
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setInfoCollapse($infoCollapse)
+    {
+        $this->infoCollapse = $infoCollapse;
         return $this;
     }
 

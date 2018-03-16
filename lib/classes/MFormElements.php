@@ -1,11 +1,11 @@
 <?php
 /**
- * @author mail[at]joachim-doerr[dot]com Joachim Doerr
+ * @author mail[at]doerr-softwaredevelopment[dot]com Joachim Doerr
  * @package redaxo5
  * @license MIT
  */
 
-abstract class AbstractMForm
+class MFormElements
 {
     /**
      * @var MFormItem[]
@@ -23,7 +23,8 @@ abstract class AbstractMForm
     private $result;
 
     /**
-     * AbstractMForm constructor.
+     * MFormElements constructor.
+     * @author Joachim Doerr
      */
     public function __construct()
     {
@@ -79,7 +80,7 @@ abstract class AbstractMForm
 
     /**
      * @param null|string $value
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addHtml($value)
@@ -89,17 +90,18 @@ abstract class AbstractMForm
 
     /**
      * @param null|string $value
-     * @return AbstractMForm
+     * @param array $attributes
+     * @return $this
      * @author Joachim Doerr
      */
-    public function addHeadline($value)
+    public function addHeadline($value, $attributes = array())
     {
-        return $this->addElement('headline', NULL, $value);
+        return $this->addElement('headline', NULL, $value, $attributes);
     }
 
     /**
      * @param null|string $value
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addDescription($value)
@@ -108,9 +110,86 @@ abstract class AbstractMForm
     }
 
     /**
+     * @param string $key
+     * @param null|string $value
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function addAlert($key, $value)
+    {
+        return $this->addElement('alert', NULL, $value, array('class'=>'alert-'.$key));
+    }
+
+    /**
+     * @param $value
+     * @return MFormElements
+     * @author Joachim Doerr
+     */
+    public function addAlertInfo($value)
+    {
+        return $this->addAlert('info', $value);
+    }
+
+    /**
+     * @param $value
+     * @return MFormElements
+     * @author Joachim Doerr
+     */
+    public function addAlertWarning($value)
+    {
+        return $this->addAlert('warning', $value);
+    }
+
+    /**
+     * @param $value
+     * @return MFormElements
+     * @author Joachim Doerr
+     */
+    public function addAlertDanger($value)
+    {
+        return $this->addAlert('danger', $value);
+    }
+
+    /**
+     * @param $value
+     * @return MFormElements
+     * @author Joachim Doerr
+     */
+    public function addAlertSuccess($value)
+    {
+        return $this->addAlert('success', $value);
+    }
+
+    /**
+     * @param $value
+     * @param $icon
+     * @return MFormElements
+     * @author Joachim Doerr
+     */
+    public function addTooltipInfo($value, $icon = '')
+    {
+        MFormAttributeHandler::addAttribute($this->item, 'info-tooltip', $value);
+        MFormAttributeHandler::addAttribute($this->item, 'info-tooltip-icon', $icon);
+        return $this;
+    }
+
+    /**
+     * @param $value
+     * @param $icon
+     * @return MFormElements
+     * @author Joachim Doerr
+     */
+    public function addCollapseInfo($value, $icon = '')
+    {
+        MFormAttributeHandler::addAttribute($this->item, 'info-collapse', $value);
+        MFormAttributeHandler::addAttribute($this->item, 'info-collapse-icon', $icon);
+        return $this;
+    }
+
+    /**
      * @param null|string $value
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addFieldset($value = null, $attributes = array())
@@ -119,7 +198,7 @@ abstract class AbstractMForm
     }
 
     /**
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function closeFieldset()
@@ -130,7 +209,7 @@ abstract class AbstractMForm
     /**
      * @param null|string $value
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addTab($value = null, $attributes = array())
@@ -139,34 +218,64 @@ abstract class AbstractMForm
     }
 
     /**
-     * @return AbstractMForm
+     * @param bool $tabGroupClose
+     * @return $this
      * @author Joachim Doerr
      */
-    public function closeTab()
+    public function closeTab($tabGroupClose = false)
     {
-        return $this->addElement('close-tab', NULL);
+        $attributes = array('data-close-group-tab' => (int) $tabGroupClose);
+        return $this->addElement('close-tab', NULL, NULL, $attributes);
     }
 
     /**
-     * @param null $callable
-     * @param array $parameter
-     * @author Joachim Doerr
-     * TODO bring it to run
+     * @param null|string $value
+     * @param array $attributes
+     * @param bool $accordion
+     * @param bool $hideToggleLinks
+     * @param int $openCollapse
      * @return $this
-     *//*
-    public function callback($callable = NULL, $parameter = array())
+     * @author Joachim Doerr
+     */
+    public function addCollapse($value = null, $attributes = array(), $accordion = false, $hideToggleLinks = false, $openCollapse = 0)
     {
-        //if ((is_string($callable) === true or is_array($callable) === true) && is_callable($callable, true) === true) {
-        //    $intId = $this->count++;
-        //    $this->elements[$intId] = array(
-        //        'type' => 'callback',
-        //        'id' => $intId,
-        //        'callable' => $callable,
-        //        'parameter' => $parameter
-        //    );
-        //}
-        return $this;
-    }*/
+        $hideToggleLinks = ($hideToggleLinks) ? 'true' : 'false';
+        $attributes = array_merge($attributes, array('data-group-accordion' => (int) $accordion, 'data-group-hide-toggle-links' => $hideToggleLinks, 'data-group-open-collapse' => $openCollapse));
+        return $this->addElement('collapse', NULL, $value, $attributes);
+    }
+
+    /**
+     * @param bool $collapseGroupClose
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function closeCollapse($collapseGroupClose = false)
+    {
+        $attributes = array('data-close-group-collapse' => (int) $collapseGroupClose);
+        return $this->addElement('close-collapse', NULL, NULL, $attributes);
+    }
+
+    /**
+     * @param null|string $value
+     * @param bool $hideToggleLinks
+     * @param int $openCollapse
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function addAccordion($value = null, $hideToggleLinks = false, $openCollapse = 0)
+    {
+        return $this->addCollapse($value, array(), true, $hideToggleLinks, $openCollapse);
+    }
+
+    /**
+     * @param bool $accordionGroupClose
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function closeAccordion($accordionGroupClose = false)
+    {
+        return $this->closeCollapse($accordionGroupClose);
+    }
 
     /**
      * @param string $typ
@@ -174,7 +283,7 @@ abstract class AbstractMForm
      * @param array $attributes
      * @param array $validations
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addInputField($typ, $id, $attributes = array(), $validations = array(), $defaultValue = NULL)
@@ -186,7 +295,7 @@ abstract class AbstractMForm
      * @param $id
      * @param null|string $value
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addHiddenField($id, $value = NULL, $attributes = array())
@@ -199,7 +308,7 @@ abstract class AbstractMForm
      * @param array $attributes
      * @param array $validations
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addTextField($id, $attributes = array(), $validations = array(), $defaultValue = NULL)
@@ -212,7 +321,7 @@ abstract class AbstractMForm
      * @param array $attributes
      * @param array $validations
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addTextAreaField($id, $attributes = array(), $validations = array(), $defaultValue = NULL)
@@ -224,7 +333,7 @@ abstract class AbstractMForm
      * @param $id
      * @param null $value
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addTextReadOnlyField($id, $value = NULL, $attributes = array())
@@ -236,7 +345,7 @@ abstract class AbstractMForm
      * @param $id
      * @param null $value
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addTextAreaReadOnlyField($id, $value = NULL, $attributes = array())
@@ -252,7 +361,7 @@ abstract class AbstractMForm
      * @param array $options
      * @param array $validation
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addOptionField($typ, $id, $attributes = array(), $options = array(), $validation = array(), $defaultValue = NULL)
@@ -302,12 +411,28 @@ abstract class AbstractMForm
      * @param array $attributes
      * @param array $validation
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addCheckboxField($id, $options = array(), $attributes = array(), $validation = array(), $defaultValue = NULL)
     {
         return $this->addOptionField('checkbox', $id, $attributes, $options, $validation, $defaultValue);
+    }
+
+    /**
+     * add checkboxe
+     * @param $id
+     * @param array $options
+     * @param array $attributes
+     * @param array $validation
+     * @param null $defaultValue
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function addToggleCheckboxField($id, $options = array(), $attributes = array(), $validation = array(), $defaultValue = NULL)
+    {
+        $attributes['data-mform-toggle'] = 'toggle';
+        return $this->addCheckboxField($id, $options, $attributes, $validation, $defaultValue);
     }
 
     /**
@@ -317,7 +442,7 @@ abstract class AbstractMForm
      * @param array $attributes
      * @param array $validation
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */ /*
     // TODO bring it to live
@@ -334,7 +459,7 @@ abstract class AbstractMForm
      * @param array $attributes
      * @param array $validation
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addRadioField($id, $options = array(), $attributes = array(), $validation = array(), $defaultValue = NULL)
@@ -348,7 +473,7 @@ abstract class AbstractMForm
      * @param array $parameter
      * @param null $catId
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addLinkField($id, $parameter = array(), $catId = NULL, $attributes = array())
@@ -362,7 +487,7 @@ abstract class AbstractMForm
      * @param array $parameter
      * @param null $catId
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addLinklistField($id, $parameter = array(), $catId = NULL, $attributes = array())
@@ -376,8 +501,9 @@ abstract class AbstractMForm
      * @param array $attributes
      * @param array $validations
      * @param null $defaultValue
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
+     * @internal attributes array('data-intern'=>'disable','data-extern'=>'disable','data-media'=>'disable','data-mailto'=>'enable','data-tel'=>'enable');
      */
     public function addCustomLinkField($id, $attributes = array(), $validations = array(), $defaultValue = NULL)
     {
@@ -390,7 +516,7 @@ abstract class AbstractMForm
      * @param array $parameter
      * @param null $catId
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addMediaField($id, $parameter = array(), $catId = NULL, $attributes = array())
@@ -404,7 +530,7 @@ abstract class AbstractMForm
      * @param array $parameter
      * @param null $catId
      * @param array $attributes
-     * @return AbstractMForm
+     * @return $this
      * @author Joachim Doerr
      */
     public function addMedialistField($id, $parameter = array(), $catId = NULL, $attributes = array())
@@ -467,6 +593,38 @@ abstract class AbstractMForm
     public function setFull()
     {
         MFormAttributeHandler::addAttribute($this->item, 'full', true);
+        return $this;
+    }
+
+    /**
+     * @param $class
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setFormItemColClass($class)
+    {
+        MFormAttributeHandler::addAttribute($this->item, 'form-item-col-class', $class);
+        return $this;
+    }
+
+    /**
+     * @param $class
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setLabelColClass($class)
+    {
+        MFormAttributeHandler::addAttribute($this->item, 'label-col-class', $class);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function setToggle()
+    {
+        MFormAttributeHandler::addAttribute($this->item, 'data-mform-toggle', 'toggle');
         return $this;
     }
 
@@ -655,6 +813,27 @@ abstract class AbstractMForm
     public function setParameters($parameter)
     {
         MFormParameterHandler::setParameters($this->item, $parameter);
+        return $this;
+    }
+
+    /**
+     * @param string $icon
+     * @author Joachim Doerr
+     * @return $this
+     */
+    public function setTabIcon($icon)
+    {
+        MFormAttributeHandler::addAttribute($this->item, 'tab-icon', $icon);
+        return $this;
+    }
+
+    /**
+     * @author Joachim Doerr
+     * @return $this
+     */
+    public function pullRight()
+    {
+        MFormAttributeHandler::addAttribute($this->item, 'pull-right', 1);
         return $this;
     }
 

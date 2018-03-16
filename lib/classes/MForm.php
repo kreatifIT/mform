@@ -1,11 +1,11 @@
 <?php
 /**
- * @author mail[at]joachim-doerr[dot]com Joachim Doerr
+ * @author mail[at]doerr-softwaredevelopment[dot]com Joachim Doerr
  * @package redaxo5
  * @license MIT
  */
 
-class MForm extends AbstractMForm
+class MForm extends MFormElements
 {
     /**
      * @var string
@@ -36,6 +36,7 @@ class MForm extends AbstractMForm
      */
     public function show()
     {
+        $_SESSION['mform_count']++;
         // init obj
         $parser = new MFormParser();
         // parse elements
