@@ -801,23 +801,42 @@ class MFormParser
     {
         // create label element
         $label = new MFormElement();
-        $label->setId($item->getId())
-            ->setValue($item->getLabel());
+        $value = array_filter((array) $item->getValue());
+        $label->setId($item->getId())->setValue($item->getLabel());
 
         // create templateElement object
         $templateElement = new MFormElement();
         $templateElement->setLabel($this->parseElement($label, 'label', true));
 
-        $args = $item->getParameter();
+        $results         = [];
+        $args            = $item->getParameter();
+        $args['link']    = 'index.php?page=yform/manager/data_edit&table_name=' . $args['table'];
+        $args['options'] = [];
+
+        if (count($value)) {
+            $sql     = rex_sql::factory();
+            $results = $sql->getArray('
+                SELECT id, ' . $args['fieldName'] . ' AS name
+                FROM ' . $args['table'] . '
+                WHERE id IN(' . implode(',', $value) . ')
+            ');
+        }
 
         switch ($item->getType()) {
             default:
             case 'yform-table-data':
-                $templateElement->setElement(rex_var_yform_table_data::getWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $item->getValue(), $args));
-            break;
+                $value = array_shift($value);
+
+                foreach ($results as $result) {
+                    $args['valueName'] = $result['name'];
+                    break;
+                }
+                $templateElement->setElement(rex_var_yform_table_data::getWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $value, $args));
+                break;
             case 'yform-table-data-list':
-                $templateElement->setElement(rex_var_yform_table_data::getListWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $item->getValue(), $args));
-            break;
+                $args['options'] = $results;
+                $templateElement->setElement(rex_var_yform_table_data::getListWidget($item->getVarId()[1], 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' . $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', implode(',', $value), $args));
+                break;
         }
 
         // add to output element array
