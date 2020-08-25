@@ -25,10 +25,11 @@ class MFormElements
     /**
      * MFormElements constructor.
      * @author Joachim Doerr
+     * @param bool $fill
      */
-    public function __construct()
+    public function __construct($fill = true)
     {
-        if (!$this->result && rex_request('function', 'string') == 'edit') {
+        if (!$this->result && rex_request('function', 'string') == 'edit' && $fill === true) {
             // load rex vars
             $this->result = MFormValueHandler::loadRexVars();
         }
@@ -62,16 +63,16 @@ class MFormElements
 
         $this->setCategory($catId);
 
-        if (sizeof($attributes) > 0) {
+        if (is_array($attributes) && sizeof($attributes) > 0) {
             $this->setAttributes($attributes);
         }
-        if (sizeof($options) > 0) {
+        if (is_array($options) && sizeof($options) > 0) {
             $this->setOptions($options);
         }
-        if (sizeof($parameter) > 0) {
+        if (is_array($parameter) && sizeof($parameter) > 0) {
             $this->setParameters($parameter);
         }
-        if (sizeof($validation) > 0) {
+        if (is_array($validation) && sizeof($validation) > 0) {
             $this->setValidations($validation);
         }
 
@@ -539,29 +540,17 @@ class MFormElements
     }
 
     /**
-     * add yform data field
+     * add rex media list field
      * @param $id
      * @param array $parameter
+     * @param null $catId
      * @param array $attributes
-     * @return AbstractMForm
-     * @author Kreatif GmbH
+     * @return $this
+     * @author Joachim Doerr
      */
-    public function addYformTableDataField($id, $parameter = array(), $attributes = array())
+    public function addImagelistField($id, $parameter = array(), $catId = NULL, $attributes = array())
     {
-        return $this->addElement('yform-table-data', $id, NULL, $attributes, array(), $parameter);
-    }
-
-    /**
-     * add yform data list field
-     * @param $id
-     * @param array $parameter
-     * @param array $attributes
-     * @return AbstractMForm
-     * @author Kreatif GmbH
-     */
-    public function addYformTableDataListField($id, $parameter = array(), $attributes = array())
-    {
-        return $this->addElement('yform-table-data-list', $id, NULL, $attributes, array(), $parameter);
+        return $this->addElement('imglist', $id, NULL, $attributes, array(), $parameter, $catId);
     }
 
     /**
@@ -726,6 +715,17 @@ class MFormElements
     }
 
     /**
+     * @param $key
+     * @author Joachim Doerr
+     * @return $this
+     */
+    public function disableOption($key)
+    {
+        MFormOptionHandler::disableOption($this->item, $key);
+        return $this;
+    }
+
+    /**
      * @param $options
      * @return $this
      * @author Joachim Doerr
@@ -733,6 +733,17 @@ class MFormElements
     public function setOptions($options)
     {
         MFormOptionHandler::setOptions($this->item, $options);
+        return $this;
+    }
+
+    /**
+     * @param $keys
+     * @return $this
+     * @author Joachim Doerr
+     */
+    public function disableOptions($keys)
+    {
+        MFormOptionHandler::disableOptions($this->item, $keys);
         return $this;
     }
 
@@ -856,5 +867,32 @@ class MFormElements
     protected function getItems()
     {
         return $this->items;
+    }
+
+
+    /**
+     * add yform data field
+     * @param $id
+     * @param array $parameter
+     * @param array $attributes
+     * @return AbstractMForm
+     * @author Kreatif GmbH
+     */
+    public function addYformTableDataField($id, $parameter = array(), $attributes = array())
+    {
+        return $this->addElement('yform-table-data', $id, NULL, $attributes, array(), $parameter);
+    }
+
+    /**
+     * add yform data list field
+     * @param $id
+     * @param array $parameter
+     * @param array $attributes
+     * @return AbstractMForm
+     * @author Kreatif GmbH
+     */
+    public function addYformTableDataListField($id, $parameter = array(), $attributes = array())
+    {
+        return $this->addElement('yform-table-data-list', $id, NULL, $attributes, array(), $parameter);
     }
 }
