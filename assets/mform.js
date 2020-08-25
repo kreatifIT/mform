@@ -211,22 +211,68 @@ function initMFormToggle(mform) {
 function mform_custom_link(item) {
     item.each(function () {
         let $id = $(this).data('id'),
+            isLinkBtnClick = false,
+            anchorValue = $(this).data('anchor-value'),
+            anchorIndex = $(this).data('anchor-index'),
             $clang = $(this).data('clang'),
             $mediaTypes = $(this).data('types'),
             $mediaCategory = $(this).data('media_category'),
             $linkCategory = $(this).data('category'),
+            ytables = $(this).data('ytables'),
             media_button = $(this).find('a#mform_media_' + $id),
             link_button = $(this).find('a#mform_link_' + $id),
             delete_button = $(this).find('a#mform_delete_' + $id),
             extern_button = $(this).find('a#mform_extern_' + $id),
             mailto_button = $(this).find('a#mform_mailto_' + $id),
             tel_button = $(this).find('a#mform_tel_' + $id),
+            table_button = $(this).find('a#mform_table_' + $id),
             hidden_input = $(this).find('input[type=hidden]').addClass('form-control').attr('readonly', true),
             showed_input = $(this).find('input[type=text]');
+
+        var $input = $('#REX_LINK_' + $id),
+            $container = $(this).parent();
+        $input.data('value', $input.val());
+
+        window.setInterval(function() {
+            var value = $input.val();
+
+            if ($input.data('value') != value) {
+                $input.data('value', value);
+
+                if (isLinkBtnClick) {
+                    isLinkBtnClick = false;
+                    $.ajax({
+                        url: rex.project.ajax_url,
+                        method: 'GET',
+                        data: {
+                            'rex-api-call': 'kreatif_mform_api',
+                            'method': 'getArticleAnchorDropdDown',
+                            'anchorValue': anchorValue,
+                            'anchorIndex': anchorIndex,
+                            'artId': value,
+                        }
+                    })
+                        .done(function (resp) {
+                            $container.children('[data-anchor-dd-wrapper]').remove();
+                            $container.append(resp.message.html);
+                        });
+                } else {
+                    $container.children('[data-anchor-dd-wrapper]').remove();
+                }
+            }
+        }, 500);
+
+        if (anchorValue > 0) {
+            $(document).on('kreatif:mformTabsReady', function() {
+                isLinkBtnClick = true;
+                $input.val(anchorValue);
+            });
+        }
 
 
         media_button.unbind().bind('click', function () {
             hidden_show_media(hidden_input, showed_input, $id);
+            isLinkBtnClick = false;
             let args = '';
             if ($mediaTypes !== undefined) {
                 args = '&args[types]=' + $mediaTypes;
@@ -239,6 +285,7 @@ function mform_custom_link(item) {
             return false;
         });
         link_button.unbind().bind('click', function () {
+            isLinkBtnClick = true;
             show_hidden_link(hidden_input, showed_input);
             let query = '&clang=' + $clang;
             if ($linkCategory !== undefined) {
@@ -247,7 +294,14 @@ function mform_custom_link(item) {
             openLinkMap('REX_LINK_' + $id, query);
             return false;
         });
+        table_button.unbind().bind('click', function () {
+            show_hidden_link(hidden_input, showed_input);
+            let query = '&clang=' + $clang + '&tables=' + ytables;
+            openTableMap('REX_LINK_' + $id, query);
+            return false;
+        });
         extern_button.unbind().bind('click', function () {
+            isLinkBtnClick = false;
             show_hidden_link(hidden_input, showed_input);
             let extern_link = prompt('Link', 'http://');
             if (extern_link != 'http://' && extern_link != "" && extern_link != undefined) {
@@ -266,6 +320,7 @@ function mform_custom_link(item) {
             return false;
         });
         tel_button.unbind().bind('click', function () {
+            isLinkBtnClick = false;
             show_hidden_link(hidden_input, showed_input);
             let tel_link = prompt('Telephone', 'tel:');
             if (tel_link != 'tel:' && tel_link != "" && tel_link != undefined) {
@@ -275,6 +330,7 @@ function mform_custom_link(item) {
             return false;
         });
         delete_button.unbind().bind('click', function () {
+            isLinkBtnClick = false;
             showed_input.val('');
             hidden_input.val('');
             return false;
@@ -297,4 +353,17 @@ function show_hidden_link(hidden_input, showed_input) {
         showed_input.val('').attr('type', 'text');
         hidden_input.val('').attr('type', 'hidden');
     }
+}
+
+function openTableMap(id, param)
+{
+    if (typeof(id) == 'undefined')
+    {
+        id = '';
+    }
+    if (typeof(param) == 'undefined')
+    {
+        param = '';
+    }
+    return newLinkMapWindow('index.php?page=mform/tablemap&opener_input_field=' + id + param);
 }

@@ -19,6 +19,12 @@ page:
                 demo_extended: { title: 'translate:demo_extended' }
                 demo_expert: { title: 'translate:demo_expert' }
                 # demo_community: { title: 'translate:demo_community' }
+        tablemap:
+            title: translate:linkmap
+            main: true
+            popup: true
+            hidden: true
+            pjax: true
 
 requires:
     redaxo: '^5.6.5'

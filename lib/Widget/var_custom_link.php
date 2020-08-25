@@ -10,7 +10,7 @@
  */
 class rex_var_custom_link extends rex_var
 {
-    public static function getCustomLinkText($value)
+    public static function getCustomLinkText($value, $args = [])
     {
         $valueName = $value;
         if (file_exists(rex_path::media($value)) === true) {
@@ -20,6 +20,28 @@ class rex_var_custom_link extends rex_var
             $art = rex_article::get((int)$value);
             if ($art instanceof rex_article) {
                 $valueName = trim(sprintf('%s [%s]', $art->getName(), $art->getId()));
+            }
+        } else if (substr($value, 0, 6) == 'ytable') {
+            // yform table!
+            list($table, $id) = explode('|', substr($value, 9));
+            $yArgs = rex_var::toArray($args['ytables']);
+            foreach ($yArgs as $yArg) {
+                if ($yArg[0] == $table) {
+                    $fields = $yArg[1];
+                    break;
+                }
+            }
+
+            if ($fields) {
+                $yTable = rex_yform_manager_table::get($table);
+                $stmt = rex_yform_manager_dataset::query($table);
+                $stmt->resetSelect();
+                $stmt->selectRaw('id, CONCAT('. $fields .') AS label');
+                $stmt->where('id', $id);
+                $item = $stmt->findOne();
+                if ($item) {
+                    $valueName = rex_i18n::translate($yTable->getName()) .': '. $item->getValue('label');
+                }
             }
         }
         return $valueName;
@@ -43,7 +65,7 @@ class rex_var_custom_link extends rex_var
                 return false;
             }
             $args = [];
-            foreach (['category', 'media', 'media_category', 'types', 'external', 'mailto', 'intern', 'phone'] as $key) {
+            foreach (['category', 'media', 'media_category', 'types', 'external', 'mailto', 'intern', 'phone', 'ytables'] as $key) {
                 if ($this->hasArg($key)) {
                     $args[$key] = $this->getArg($key);
                 }
@@ -60,7 +82,12 @@ class rex_var_custom_link extends rex_var
 
     public static function getWidget($id, $name, $value, array $args = [], $btnIdUniq = true)
     {
-        $valueName = self::getCustomLinkText($value);
+        $anchorValue = 0;
+        if (filter_var($value, FILTER_VALIDATE_URL) === FALSE && is_numeric($value) && strpos($value, '.')) {
+            $anchorValue = $value;
+            list($value) = explode('.', $value);
+        }
+        $valueName = self::getCustomLinkText($value, $args);
         $category = '';
         $mediaCategory = '';
         $types = '';
@@ -88,7 +115,18 @@ class rex_var_custom_link extends rex_var
         $externalClass = (isset($args['external']) && $args['external'] == 0) ? ' hidden' : $class;
         $emailClass = (isset($args['mailto']) && $args['mailto'] == 0) ? ' hidden' : $class;
         $linkClass = (isset($args['intern']) && $args['intern'] == 0) ? ' hidden' : $class;
+        $tableClass = (isset($args['intern']) && $args['intern'] == 0) ? ' hidden' : $class;
         $phoneClass = (isset($args['phone']) && $args['phone'] == 0) ? ' hidden' : $class;
+        $_ytables = rex_var::toArray($args['ytables']);
+        $ytables = [];
+
+        foreach ($_ytables as $ytable) {
+            $_table = rex_yform_manager_table::get($ytable[0]);
+            if ($_table) {
+                $ytables[] = implode(':', $ytable);
+            }
+        }
+
 
         if ($btnIdUniq === true) {
             $id = uniqid($id);
@@ -102,6 +140,7 @@ class rex_var_custom_link extends rex_var
         <a href="#" class="btn btn-popup' . $emailClass . '" id="mform_mailto_' . $id . '" title="' . rex_i18n::msg('var_mailto_link') . '"><i class="rex-icon fa-envelope-o"></i></a>
         <a href="#" class="btn btn-popup' . $phoneClass . '" id="mform_tel_' . $id . '" title="' . rex_i18n::msg('var_phone_link') . '"><i class="rex-icon fa-phone"></i></a>
         <a href="#" class="btn btn-popup' . $linkClass . '" id="mform_link_' . $id . '" title="' . rex_i18n::msg('var_link_open') . '"><i class="rex-icon rex-icon-open-linkmap"></i></a>
+        '. (count($ytables) ? '<a href="#" class="btn btn-popup' . $tableClass . '" id="mform_table_' . $id . '" title="' . rex_i18n::msg('var_table_open') . '"><i class="rex-icon rex-icon-table"></i></a>' : '') .'
         <a href="#" class="btn btn-popup' . $class . '" id="mform_delete_' . $id . '" title="' . rex_i18n::msg('var_link_delete') . '"><i class="rex-icon rex-icon-delete-link"></i></a>
         ';
 
@@ -112,7 +151,7 @@ class rex_var_custom_link extends rex_var
         $fragment->setVar('elements', [$e], false);
         return str_replace(
             '<div class="input-group">',
-            '<div class="input-group custom-link" ' . $category . $types . $mediaCategory . ' data-clang="' . rex_clang::getCurrentId() . '" data-id="' . $id . '">',
+            '<div class="input-group custom-link" ' . $category . $types . $mediaCategory . ' data-clang="' . rex_clang::getCurrentId() . '" data-id="' . $id . '" data-anchor-value="'. $anchorValue .'" data-anchor-index="'. $args['anchor_index'] .'" data-ytables="'. rex_escape(implode('|', $ytables), 'html_attr') .'">',
             $fragment->parse('core/form/widget.php')
         );
     }

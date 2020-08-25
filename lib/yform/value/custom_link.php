@@ -33,6 +33,8 @@ class rex_yform_value_custom_link extends rex_yform_value_abstract
                 'mailto' => ['type' => 'checkbox',   'label' => rex_i18n::msg('yform_values_custom_link_mailto')],
                 'intern' => ['type' => 'checkbox',   'label' => rex_i18n::msg('yform_values_custom_link_intern')],
                 'phone' => ['type' => 'checkbox',   'label' => rex_i18n::msg('yform_values_custom_link_phone')],
+                'anchor_index' => ['type' => 'text',   'label' => 'Anker-Index', 'default' => 10],
+                'ytables' => ['type' => 'be_table',    'label' => rex_i18n::msg('yform_values_custom_link_ytables'), 'columns' => 'choice|table|Table|SELECT table_name AS value, name FROM rex_yform_table WHERE hidden = 0 ORDER BY name,Fields'],
                 'types' => ['type' => 'text',    'label' => rex_i18n::msg('yform_values_custom_link_media_types')],
                 'media_category' => ['type' => 'text',    'label' => rex_i18n::msg('yform_values_custom_link_media_category')],
                 'category' => ['type' => 'be_link',    'label' => rex_i18n::msg('yform_values_custom_link_link_category')],

@@ -800,8 +800,14 @@ class MFormParser
         // default manipulations
         MFormItemManipulator::setVarAndIds($item); // transform ids for template usage
 
-        foreach (array('intern'=>'enable','extern'=>'enable','media'=>'enable','mailto'=>'enable','tel'=>'disable') as $key => $value) {
-            $value = (((isset($item->getAttributes()['data-' . $key])) ? $item->getAttributes()['data-' . $key] : $value) == 'enable');
+        foreach (array('intern'=>'enable','extern'=>'enable','media'=>'enable','mailto'=>'enable','tel'=>'disable', 'anchor_index' => 10, 'ytables' => '') as $key => $_value) {
+            $value = (((isset($item->getAttributes()['data-' . $key])) ? $item->getAttributes()['data-' . $key] : $_value) == 'enable');
+            if ($key == 'anchor_index') {
+                $value = isset($item->getAttributes()[$key]) ? $item->getAttributes()[$key] : $_value;
+            }
+            if ($key == 'ytables') {
+                $value = isset($item->getAttributes()[$key]) ? $item->getAttributes()[$key] : $_value;
+            }
             $key = ($key == 'extern') ? 'external' : $key;
             $key = ($key == 'tel') ? 'phone' : $key;
             $item->setParameter(array_merge($item->getParameter(), array($key => $value)));
