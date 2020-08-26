@@ -928,6 +928,39 @@ class MFormParser
         return $this;
     }
 
+    private function generateYformForm(MFormItem $item)
+    {
+        $valueId = $item->getVarId()[0];
+        $parameter = $item->getParameter();
+        $yform = rex::getProperty('mform_yform');
+        $yform->setObjectparams('form_action', '');
+        $yform->setObjectparams('only_fields', true);
+
+        $fragment = new rex_fragment();
+        $fragment->setVar('yform', $yform);
+        $fragment->parse($parameter['fragment_path']);
+
+        $yform->setHiddenField('mform_yform_fragment_path', $parameter['fragment_path']);
+        $yform->setHiddenField('mform_yform_value_id', $valueId);
+
+        if ($yform->isSend()) {
+            $output = $yform->regenerateForm();
+        } else {
+            if ($item->getValue()) {
+                $yform->setObjectparams('data', $item->getValue());
+            }
+            $output = $yform->getForm();
+        }
+
+        $element = new MFormElement();
+        $element->setOutput($output)
+            ->setAttributes($this->parseAttributes($item->getAttributes()))
+            ->setClass($item->getClass()); // set output to replace in template
+        // add to output element array
+        $this->elements[] = $this->parseElement($element, $item->getType());
+        return $this;
+    }
+
     /**
      * @param MFormItem[] $items
      * @return $this
@@ -1037,6 +1070,9 @@ class MFormParser
                     case 'yform-table-data':
                     case 'yform-table-data-list':
                         $this->generateYformTableDataElement($item);
+                        break;
+                    case 'yform-fragment':
+                        $this->generateYformForm($item);
                         break;
                 }
             }

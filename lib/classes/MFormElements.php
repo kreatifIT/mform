@@ -895,4 +895,9 @@ class MFormElements
     {
         return $this->addElement('yform-table-data-list', $id, NULL, $attributes, array(), $parameter);
     }
+
+    public function addYform($id, $parameter = array(), $attributes = array())
+    {
+        return $this->addElement('yform-fragment', $id, NULL, $attributes, array(), $parameter);
+    }
 }

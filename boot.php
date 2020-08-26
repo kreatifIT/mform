@@ -12,6 +12,34 @@ if (rex_addon::exists('yform') &&
 }
 
 if (rex::isBackend()) {
+    rex_extension::register('PACKAGES_INCLUDED', function() {
+        rex::setProperty('mform_yform', \Kreatif\Form::factory('', false));
+    });
+
+    // kreatif: yform saving
+    rex_extension::register('SLICE_UPDATED', function(rex_extension_point $ep) {
+        $fragPath = rex_post('mform_yform_fragment_path', 'string');
+        $valueId = rex_post('mform_yform_value_id', 'int');
+
+        if ($fragPath && $valueId) {
+            $sql = rex_sql::factory();
+            $sliceId = $ep->getParam('slice_id');
+            $yform = rex::getProperty('mform_yform');
+            $fragment = new rex_fragment();
+            $fragment->setVar('yform', $yform);
+            $fragment->parse($fragPath);
+
+            $yform->getForm();
+            $values = $yform->getFormEmailValues();
+
+            $sql->setTable('rex_article_slice');
+            $sql->setValue('value' . $valueId, json_encode($values));
+            $sql->setWhere(['id' => $sliceId]);
+            $sql->update();
+        }
+    });
+
+
     // check theme css is exists
     MFormThemeHelper::themeBootCheck(rex_addon::get('mform')->getConfig('mform_theme'));
 
