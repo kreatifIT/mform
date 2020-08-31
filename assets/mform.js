@@ -5,6 +5,16 @@ $(document).on('rex:ready', function () {
     mform_init();
 });
 
+$(document).on('be_table:row-added', function (event, params) {
+    if ($('div.custom-link').length) {
+        let custom_link = $('div.custom-link');
+        if (custom_link.length) {
+            console.debug(custom_link);
+            mform_custom_link(custom_link);
+        }
+    }
+});
+
 function mform_init() {
     let mform = $('.mform');
 
@@ -210,6 +220,17 @@ function initMFormToggle(mform) {
 
 function mform_custom_link(item) {
     item.each(function () {
+        if($(this).children('#REX_LINK_'+ $(this).data('id') +'_NAME').length == 0) {
+            var newId = new Date().getTime();
+            $(this).data('id', newId);
+            $(this).children('input[type=text]').prop('name', 'REX_LINK_NAME['+ newId +']').prop('id', 'REX_LINK_'+ newId+'_NAME');
+            $(this).children('input[type=hidden]').prop('id', 'REX_LINK_'+ newId);
+            $(this).find('.input-group-btn > .btn-popup').each(function() {
+                var _id = $(this).prop('id').substr(0, $(this).prop('id').lastIndexOf('_') + 1);
+                $(this).prop('id', _id + newId);
+            });
+        }
+
         let $id = $(this).data('id'),
             isLinkBtnClick = false,
             anchorValue = $(this).data('anchor-value'),
