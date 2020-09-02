@@ -117,7 +117,7 @@ class rex_var_custom_link extends rex_var
         $linkClass = (isset($args['intern']) && $args['intern'] == 0) ? ' hidden' : $class;
         $tableClass = (isset($args['intern']) && $args['intern'] == 0) ? ' hidden' : $class;
         $phoneClass = (isset($args['phone']) && $args['phone'] == 0) ? ' hidden' : $class;
-        $_ytables = rex_var::toArray($args['ytables']);
+        $_ytables = (array)rex_var::toArray($args['ytables']);
         $ytables = [];
 
         foreach ($_ytables as $ytable) {
