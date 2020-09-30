@@ -235,6 +235,7 @@ function mform_custom_link(item) {
             isLinkBtnClick = false,
             anchorValue = $(this).data('anchor-value'),
             anchorIndex = $(this).data('anchor-index'),
+            langId = $(this).data('clang'),
             $clang = $(this).data('clang'),
             $mediaTypes = $(this).data('types'),
             $mediaCategory = $(this).data('media_category'),
@@ -252,7 +253,8 @@ function mform_custom_link(item) {
 
         var $input = $('#REX_LINK_' + $id),
             $container = $(this).parent();
-        $input.data('value', $input.val());
+        //$input.data('value', $input.val());
+
 
         window.setInterval(function() {
             var value = $input.val();
@@ -271,6 +273,7 @@ function mform_custom_link(item) {
                             'anchorValue': anchorValue,
                             'anchorIndex': anchorIndex,
                             'artId': value,
+                            'langId': langId
                         }
                     })
                         .done(function (resp) {
@@ -316,6 +319,7 @@ function mform_custom_link(item) {
             return false;
         });
         table_button.unbind().bind('click', function () {
+            isLinkBtnClick = false;
             show_hidden_link(hidden_input, showed_input);
             let query = '&clang=' + $clang + '&tables=' + ytables;
             openTableMap('REX_LINK_' + $id, query);
@@ -332,6 +336,7 @@ function mform_custom_link(item) {
             return false;
         });
         mailto_button.unbind().bind('click', function () {
+            isLinkBtnClick = false;
             show_hidden_link(hidden_input, showed_input);
             let mailto_link = prompt('Mail', 'mailto:');
             if (mailto_link != 'mailto:' && mailto_link != "" && mailto_link != undefined) {
