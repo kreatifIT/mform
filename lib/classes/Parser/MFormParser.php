@@ -812,6 +812,7 @@ class MFormParser
             $key = ($key == 'tel') ? 'phone' : $key;
             $item->setParameter(array_merge($item->getParameter(), array($key => $value)));
         }
+        $item->setParameter(array_merge($item->getParameter(), ['class'  => $item->getClass()]));
 
         $item->setId(str_replace(array('_', ']', '['), '', rand(100, 999) . $item->getVarId()));
 
