@@ -17,7 +17,7 @@ if (rex::isBackend()) {
     });
 
     // kreatif: yform saving
-    rex_extension::register('SLICE_UPDATED', function(rex_extension_point $ep) {
+    function processYformForms(rex_extension_point $ep) {
         $fragPath = rex_post('mform_yform_fragment_path', 'string');
         $valueId = rex_post('mform_yform_value_id', 'int');
 
@@ -37,7 +37,10 @@ if (rex::isBackend()) {
             $sql->setWhere(['id' => $sliceId]);
             $sql->update();
         }
-    });
+    }
+
+    rex_extension::register('SLICE_ADDED', 'processYformForms');
+    rex_extension::register('SLICE_UPDATED', 'processYformForms');
 
 
     // check theme css is exists
