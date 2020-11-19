@@ -22,6 +22,7 @@ page:
         tablemap:
             title: translate:linkmap
             main: true
+            perm: mform[tablemap]
             popup: true
             hidden: true
             pjax: true
