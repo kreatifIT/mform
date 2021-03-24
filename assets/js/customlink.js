@@ -41,7 +41,7 @@ function customlink_init_widget(element) {
 
             let linkUrl = table.split('_').join('-') + '://' + id;
 
-            hidden_input.val(linkUrl);
+            hidden_input.val(linkUrl).trigger('change');
             showed_input.val(label);
         });
 
@@ -75,6 +75,7 @@ function customlink_init_widget(element) {
                 if (value != hidden_input.val()) {
                     clearInterval(timer);
                     showed_input.val(hidden_input.val());
+                    hidden_input.trigger('change');
                 }
             }
         }, 10);
@@ -121,11 +122,11 @@ function customlink_init_widget(element) {
         hidden_input.attr('id', 'REX_LINK_' + id).addClass('form-control').attr('readonly', true);
 
         if (extern_link !== 'https://' && extern_link !== "" && extern_link !== undefined && extern_link != null) {
-            hidden_input.val(extern_link);
+            hidden_input.val(extern_link).trigger('change');
             showed_input.val(extern_link);
         }
         if (extern_link == null) {
-            hidden_input.val(value);
+            hidden_input.val(value).trigger('change');
             showed_input.val(text);
         }
         return false;
@@ -150,10 +151,10 @@ function customlink_init_widget(element) {
 
         if (mailto_link !== 'mailto:' && mailto_link !== "" && mailto_link !== undefined && mailto_link != null) {
             showed_input.val(mailto_link);
-            hidden_input.val(mailto_link);
+            hidden_input.val(mailto_link).trigger('change');
         }
         if (mailto_link == null) {
-            hidden_input.val(value);
+            hidden_input.val(value).trigger('change');
             showed_input.val(text);
         }
         return false;
@@ -178,10 +179,10 @@ function customlink_init_widget(element) {
 
         if (tel_link !== 'tel:' && tel_link !== "" && tel_link !== undefined && tel_link != null) {
             showed_input.val(tel_link);
-            hidden_input.val(tel_link);
+            hidden_input.val(tel_link).trigger('change');
         }
         if (tel_link == null) {
-            hidden_input.val(value);
+            hidden_input.val(value).trigger('change');
             showed_input.val(text);
         }
         return false;
@@ -193,7 +194,7 @@ function customlink_init_widget(element) {
         clearInterval(timer);
         closeDropDown(id);
         showed_input.val('');
-        hidden_input.val('');
+        hidden_input.val('').trigger('change');
         return false;
     });
 }

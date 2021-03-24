@@ -80,8 +80,6 @@ function initMFormAccordionToggle(element, reinit) {
             }
         });
     }
-
-    // kreatif
 }
 
 function initMFormSelectAccordionToggle(element, init, reinit) {

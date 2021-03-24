@@ -99,7 +99,6 @@ class rex_var_custom_link extends rex_var
             if (!$this->environmentIs(self::ENV_INPUT)) return false;
 
             $args = [];
-            // kreatif: foreach (['category', 'media', 'media_category', 'types', 'external', 'mailto', 'intern', 'phone', 'ytables'] as $key) {
             foreach (['category', 'media', 'media_category', 'types', 'external', 'mailto', 'intern', 'phone', 'external_prefix', 'ylink'] as $key) {
                 if ($this->hasArg($key)) {
                     $args[$key] = $this->getArg($key);
@@ -210,7 +209,7 @@ class rex_var_custom_link extends rex_var
 
         $e = [];
         $e['field'] = '<input class="form-control" type="text" name="REX_LINK_NAME[' . $id . ']" value="' . rex_escape($valueName) . '" id="REX_LINK_' . $id . '_NAME" readonly="readonly" /><input type="hidden" name="' . $name . '" id="REX_LINK_' . $id . '" value="' . $value . '" />';
-        $e['before'] = '<div class="rex-js-widget custom-link' . $wdgtClass . '" data-widget-id="' . $id . '">';
+        $e['before'] = '<div class="rex-js-widget custom-link' . $wdgtClass . '" data-widget-id="' . $id . '" data-anchor-value="' . $anchorValue . '">';
         $e['after'] = '</div>';
         $e['functionButtons'] = $ylinks . '
         <a href="#" class="btn btn-popup media_link ' . $mediaClass . '" id="mform_media_' . $id . '" title="' . rex_i18n::msg('var_media_open') . '"><i class="rex-icon fa-file-o"></i></a>
