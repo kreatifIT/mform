@@ -1,6 +1,7 @@
 # Custom-Link Element
 
-Das Custom MForm Custom-Link-Element ermöglicht es durch den Einsatz eines Feldes mehrere Link-Typen definieren zu können.    
+Das Custom MForm Custom-Link-Element ermöglicht es durch den Einsatz eines Feldes mehrere Link-Typen definieren zu können.  
+Das Cusotm-Link-Element steht in MForm, YForm und auch als REX_VAR zur Verfügung.  
 
 Die Link Typen des Custom-Link-Elements:
 
@@ -8,9 +9,8 @@ Die Link Typen des Custom-Link-Elements:
 * `data-intern`
 * `data-media`
 * `data-mailto`
-* `data-phone` (veraltet: data-tel )
-
-> data-tel wird in späteren Versionen entfallen. 
+* `data-tel`
+* `ylink`
 
 Jeder dieser Typen kann aktiviert oder deaktiviert werden. Per default sind folgende Typen aktiv:
 
@@ -18,72 +18,87 @@ Jeder dieser Typen kann aktiviert oder deaktiviert werden. Per default sind folg
 * `data-intern`
 * `data-media`
 
-Beispiel: 
+
+## Verwendung mit MBlock
+
+Das Custom-Link-Element darf keinen String (wie bei anderen Elementen) in der ID enthalten:  
+
+`$MBlock->addCustomLinkField("$id.0.1",array('label'=>'Link'));`
+
+
+## Beispiel-Code: 
+
+### MForm
 
 ```php
-$mform->addCustomLinkField(6, array('label'=>'Media', 'data-phone'=>'disable', 'data-mailto'=>'disable', 'data-intern'=>'disable'));
+$mform = new MForm();
+$ylink = [['name' => 'Countries', 'table'=>'rex_ycountries', 'column' => 'de_de']];
+$mform->addCustomLinkField(1, ['label' => 'custom', 'data-intern'=>'disable', 'data-extern'=>'enable', 'ylink' => $ylink]);
+echo $mform->show();
+```
+
+### Als REX_VAR
+
+```html
+REX_CUSTOM_LINK[id=5 widget=1 external=1 intern=0 mailto=0 phone=1 media=1 ylink="Countries::rex_ycountries::de_de,CountriesEN::rex_ycountries::en_gb"]
+```
+
+### Alsesen der YLinks per Outputfilter
+
+### YForm links
+
+Um die  generierten Urls wie `rex_news://1` zu ersetzen, muss das folgende Skript in die `boot.php` des `project` AddOns eingefügt werden.
+Der Code für die Urls muss modifiziert werden. 
+
+```php
+rex_extension::register('OUTPUT_FILTER', function(\rex_extension_point $ep) {
+    return preg_replace_callback(
+        '@((rex_news|rex_person))://(\d+)(?:-(\d+))?/?@i',
+        function ($matches) {
+            // table = $matches[1]
+            // id = $matches[3]
+            $url = '';
+            switch ($matches[1]) {
+                case 'news':
+                    // Example, if the Urls are generated via Url-AddOn  
+                    $id = $matches[3];
+                    if ($id) {
+                       return rex_getUrl('', '', ['news' => $id]); 
+                    }
+                    break;
+                case 'person':
+                    // ein anderes Beispiel 
+                    $url = '/index.php?person='.$matches[3];
+                    break;
+            }
+            return $url;
+        },
+        $ep->getSubject()
+    );
+}, rex_extension::NORMAL);
+
 ```
 
 
-> ***Wichtig*** Beim Einsatz mit **mblock** muss ein numerischer Key verwendet werden: 
 
-Beispiel: 
+### Auslesen der Ylinks manuell: 
 
-`$Mform->addCustomlinkField("$id.0.1")` 
+```php 
+$link = explode("://", $img['link']);
 
+      if (count($link) > 1) {
+          // its a table link
+          // url AddOn
+        $url = rex_getUrl('', '', [$link[0] => $link[1]]); // key muss im url addon übereinstimmen
+      } else {
+          $extUrl = parse_url($link[0]);
 
-
-## Einsatz außerhalb von MForm
-
-Das Custom-Link Element ist auch als Widget in rex_form, YForm und als REXVAR einsetzbar. 
-
-### Moduleingaben 
-
-**Eingabe-Code**
-
-`REX_CUSTOM_LINK[id=1 widget=1 external=1 intern=0 mailto=0 phone=1 media=1]`
-
-Die Ausgabe ist ein einfaches REX_VALUE. 
-
-
-### rex_form
-
-
-In rex_form einfach ein bestehendes Objekt mit folgender Zeile erweitern:
-
-```php
-$field = $form->addField('', 'mein_custom_link_field', null, ['internal::fieldClass' => 'rex_form_widget_customlink_element'], true);
+          if (isset($extUrl['scheme']) && ($extUrl['scheme'] == 'http' || $extUrl['scheme'] == 'https')) {
+              // its an external link 
+              $url = $link[0];
+          } else {
+              // internal id
+              $url = rex_getUrl($link[0]);
+          }
+      }
 ```
-
-Zum Einstellen des Custom-Link Elements stehen neben den klassischen rex_form Methoden wie z.B.
-
-`$field->setLabel('Mein CustomLink Feld');`
-
-folgende zusätzliche Möglichkeiten zur Verfügung:
-
-* Link (intern) deaktivieren: `$field->setIntern(false);`
-* Link (extern) deaktivieren: `$field->setExternal(false);`
-* Medienlink deaktivieren: `$field->setMedia(false);`
-* Email-Link deaktivieren: `$field->setMailto(false);`
-* Telefonlink deaktivieren: `$field->setPhone(false);`
-
-Im Umkehrschluss können die einzelnen Felder durch Übergabe des Wertes `true` einzeln wieder aktiviert werden. Dies ist allerdings nicht zwingend nötig, da standardmäßig alle Felder auf `true` gesetzt sind.
-
-Weitere Einstellungen für spezielle Linkfelder:
-* Kategorie-ID setzen (bezieht sich auf interne Links): `$field->setCategoryId(1);`
-* Medienkategorie-ID setzen (bezieht sich auf das Medienlink-Feld): `$field->setMediaCategoryId(1);`
-* Dateitypen definieren (bezieht sich auf das Medienlink-Feld): `$field->setTypes('jpg,gif,png,pdf');`
-
-
-### YForm
-
-In YForm findet man es im Table-Manager.  
-
-PHP-Notation: 
-
-`$yform->setValueField('custom_link', array('Link','Links','1','1','1','1'));`
-
-PIPE-Notation: 
-
-`custom_link|Link|Links|1|1|1|1|`
-

@@ -22,15 +22,6 @@ function mform_init() {
     initMFormTooltip(mform);
     // init toggle
     initMFormToggle(mform);
-
-    // init by siteload
-    if ($('#REX_FORM').length || mform.length || $('form.rex-yform').length || $($('form div.custom-link').length)) {
-        let custom_link = $('div.custom-link');
-        if (custom_link.length) {
-            mform_custom_link(custom_link);
-        }
-    }
-
     // init mform collapse
     initMFormCollapseData(mform);
 
@@ -73,99 +64,132 @@ function initMFormCollapseData(mform, reinit) {
     });
 }
 
-function initMFormAccordionToggle($element, reinit) {
+function initMFormAccordionToggle(element, reinit) {
     let opened = false;
 
-    $element.find('.collapse').each(function () {
+    element.find('.collapse').each(function () {
         if ($(this).hasClass('in')) {
             opened = true;
         }
     });
 
-    if (!opened && $element.attr('data-group-open-collapse') > 0) {
-        $element.find('.collapse').each(function (index) {
-            if ((index+1) == $element.attr('data-group-open-collapse')) {
+    if (!opened && element.attr('data-group-open-collapse') > 0) {
+        element.find('.collapse').each(function (index) {
+            if ((index+1) == element.attr('data-group-open-collapse')) {
                 $(this).addClass('in');
             }
         });
     }
+
+    // kreatif
 }
 
-function initMFormSelectAccordionToggle($element, init, reinit) {
-    let acc = $element.parent().parent().parent().find('.panel-group[data-group-select-accordion=true]');
+function initMFormSelectAccordionToggle(element, init, reinit) {
+    let acc = element.parents().find('.panel-group[data-group-select-accordion=true]'),
+        parent_group = element.parents('.form-group');
+
+    if (parent_group.next().hasClass('mform')) {
+        acc = parent_group.next().find('.panel-group[data-group-accordion]')
+    }
 
     if (init && acc.length) {
-        $element.find('option').remove();
+        element.find('option').remove();
 
-        if (!$.isNumeric($element.attr('data-selected')) && acc.attr('data-group-open-collapse') > 0) {
-            $element.attr('data-selected', (acc.attr('data-group-open-collapse')));
+        if (!$.isNumeric(element.attr('data-selected')) && acc.attr('data-group-open-collapse') > 0) {
+            element.attr('data-selected', (acc.attr('data-group-open-collapse')));
         }
 
         if (acc.attr('data-group-open-collapse') == 0) {
-            $element.append('<option value="" selected="selected">' + $element.attr('data-group-selected-text') + '</option>');
+            element.append('<option value="" data-chose-accordion-msg="1">' + element.attr('data-group-selected-text') + '</option>');
+        }
+
+        if (element.attr('data-hide-toggle-links') == 1) {
+            acc.find('a[data-toggle=collapse]').hide();
         }
 
         acc.find('> .panel > a[data-toggle=collapse]').each(function (index) {
             let togglecollapse = $(this),
                 indexId = (index + 1),
-                target = togglecollapse.attr('data-target');
+                target = indexId,
+                selected;
 
-            $element.append('<option value="' + indexId + '" data-target="' + target + '" data-parent="' + togglecollapse.attr('data-parent') + '">' + togglecollapse.text() + '</option>');
+            if ($(this).attr('data-select-collapse-id') !== undefined) {
+                indexId = $(this).attr('data-select-collapse-id')
+                target = indexId;
+            }
+
+            if (element.attr('data-selected') === indexId) {
+                selected = ' selected="selected"';
+            }
+
+            element.append('<option value="' + indexId + '" data-target="' + target + '" data-parent="' + togglecollapse.attr('data-parent') + '"'+ selected + '>' + togglecollapse.text() + '</option>');
             togglecollapse.attr('data-index', indexId);
 
             if (reinit) {
-                $(target).removeClass('in');
+                $(target).removeClass('in').attr('aria-expanded', false);
             }
 
-            if ($.isNumeric($element.attr('data-selected')) && $element.attr('data-selected') == indexId) {
-                $element.find('option[value=' + indexId + ']').attr('selected', 'selected');
-                $(target).addClass('in').css('height','');
+            if (element.attr('data-selected') === indexId) {
+                togglecollapse.next().addClass('in').css('height','').attr('aria-expanded', true);
             }
         });
     }
 
     if (acc.length) {
+        let selected = element.find(':selected'),
+            targetId = (!selected.length) ? element.attr('data-selected') : selected.attr('data-target'),
+            targetLink = $('a[data-index="' + targetId + '"]'),
+            target = targetLink.next();
 
-        let selected = $element.find(':selected'),
-            target = selected.attr('data-target');
+        // console.log([selected,targetId,targetLink,target]);
 
-        if (!selected.length) {
-            target = $('a[data-index="' + $element.attr('data-selected') + '"]').attr('data-target');
-        } else {
-            $element.attr('data-selected', selected.attr('value'));
+        if (selected.length) {
+            element.attr('data-selected', selected.attr('value'));
         }
 
-        if (!$(target).hasClass('in') && !init) {
-            $target_elem = $('a[data-target="' + target + '"]');
-            $target_elem.trigger('click');
+        if (!target.hasClass('in') && !init) {
+            targetLink.trigger('click');
+        }
+
+        if (selected.val() == '') {
+            acc.find('.panel > .collapse.in').each(function () {
+                $(this).collapse('hide');
+            });
         }
     }
 }
 
-function initMFormCollapseToggle($element, init) {
-    let target = $element.attr('data-target');
+function initMFormCollapseToggle(element, init) {
+    let target = element.attr('data-target');
 
-    if (!$element.attr('data-target')) {
-        let form_group = $element.parents('.form-group'),
+    if (!element.attr('data-target')) {
+        let form_group = element.parents('.form-group'),
             next_link = form_group.nextAll('a[data-toggle=collapse]');
+
+        if (!next_link.length) {
+            let next = form_group.next();
+            if (next.is('div') && next.hasClass('mform')) {
+                next_link = next.find('> a[data-toggle=collapse]');
+            }
+        }
 
         if (next_link.attr('data-target')) {
             target = next_link.attr('data-target');
         }
     }
 
-    if (init && target.length) {
+    if (init && target !== undefined && target.length) {
         collapseClass(target, 'add');
     }
 
     if (init) {
-        if ($element.prop('checked')) {
+        if (element.prop('checked')) {
             collapseClass(target, 'add');
         } else {
             collapseClass(target, 'remove');
         }
     } else {
-        if ($element.prop('checked')) {
+        if (element.prop('checked')) {
             collapseToogle(target, 'show');
         } else {
             collapseToogle(target, 'hide');
@@ -174,7 +198,7 @@ function initMFormCollapseToggle($element, init) {
 }
 
 function collapseToogle(target, type) {
-    if (target.length) {
+    if (target !== undefined && target.length) {
         $(target).each(function(){
             let element = $(this);
             if ($(this).attr('data-target')) {
@@ -186,7 +210,7 @@ function collapseToogle(target, type) {
 }
 
 function collapseClass(target, type) {
-    if (target.length) {
+    if (target !== undefined && target.length) {
         $(target).each(function(){
             let element = $(this);
             if ($(this).attr('data-target')) {
@@ -216,180 +240,4 @@ function initMFormToggle(mform) {
     });
 
     mform.find('input[type=checkbox][data-mform-toggle^=toggle]').bootstrapMFormToggle('destroy').bootstrapMFormToggle();
-}
-
-function mform_custom_link(item) {
-    item.each(function () {
-        if($(this).children('#REX_LINK_'+ $(this).data('id') +'_NAME').length == 0) {
-            var newId = new Date().getTime();
-            $(this).data('id', newId);
-            $(this).children('input[type=text]').prop('name', 'REX_LINK_NAME['+ newId +']').prop('id', 'REX_LINK_'+ newId+'_NAME');
-            $(this).children('input[type=hidden]').prop('id', 'REX_LINK_'+ newId);
-            $(this).find('.input-group-btn > .btn-popup').each(function() {
-                var _id = $(this).prop('id').substr(0, $(this).prop('id').lastIndexOf('_') + 1);
-                $(this).prop('id', _id + newId);
-            });
-        }
-
-        let $id = $(this).data('id'),
-            isLinkBtnClick = false,
-            anchorValue = $(this).data('anchor-value'),
-            anchorIndex = $(this).data('anchor-index'),
-            langId = $(this).data('clang'),
-            $clang = $(this).data('clang'),
-            $mediaTypes = $(this).data('types'),
-            $mediaCategory = $(this).data('media_category'),
-            $linkCategory = $(this).data('category'),
-            ytables = $(this).data('ytables'),
-            media_button = $(this).find('a#mform_media_' + $id),
-            link_button = $(this).find('a#mform_link_' + $id),
-            delete_button = $(this).find('a#mform_delete_' + $id),
-            extern_button = $(this).find('a#mform_extern_' + $id),
-            mailto_button = $(this).find('a#mform_mailto_' + $id),
-            tel_button = $(this).find('a#mform_tel_' + $id),
-            table_button = $(this).find('a#mform_table_' + $id),
-            hidden_input = $(this).find('input[type=hidden]').addClass('form-control').attr('readonly', true),
-            showed_input = $(this).find('input[type=text]');
-
-        var $input = $('#REX_LINK_' + $id),
-            $container = $(this).parent();
-        //$input.data('value', $input.val());
-
-
-        window.setInterval(function() {
-            var value = $input.val();
-
-            if ($input.data('value') != value) {
-                $input.data('value', value);
-
-                if (isLinkBtnClick) {
-                    isLinkBtnClick = false;
-                    $.ajax({
-                        url: rex.project.ajax_url,
-                        method: 'GET',
-                        data: {
-                            'rex-api-call': 'kreatif_mform_api',
-                            'method': 'getArticleAnchorDropdDown',
-                            'anchorValue': anchorValue,
-                            'anchorIndex': anchorIndex,
-                            'artId': value,
-                            'langId': langId
-                        }
-                    })
-                        .done(function (resp) {
-                            $container.children('[data-anchor-dd-wrapper]').remove();
-                            $container.append(resp.message.html);
-                        });
-                } else {
-                    $container.children('[data-anchor-dd-wrapper]').remove();
-                }
-            }
-        }, 500);
-
-        if (anchorValue > 0) {
-            $(document).on('kreatif:mformTabsReady', function() {
-                isLinkBtnClick = true;
-                $input.val(anchorValue);
-            });
-        }
-
-
-        media_button.unbind().bind('click', function () {
-            hidden_show_media(hidden_input, showed_input, $id);
-            isLinkBtnClick = false;
-            let args = '';
-            if ($mediaTypes !== undefined) {
-                args = '&args[types]=' + $mediaTypes;
-            }
-            if ($mediaCategory !== undefined) {
-                args = args + '&args[category]=' + $mediaCategory;
-            }
-            console.log(args);
-            openREXMedia($id, args); // &args[preview]=1&args[types]=jpg%2Cpng
-            return false;
-        });
-        link_button.unbind().bind('click', function () {
-            isLinkBtnClick = true;
-            show_hidden_link(hidden_input, showed_input);
-            let query = '&clang=' + $clang;
-            if ($linkCategory !== undefined) {
-                query = query + '&category_id=' + $linkCategory;
-            }
-            openLinkMap('REX_LINK_' + $id, query);
-            return false;
-        });
-        table_button.unbind().bind('click', function () {
-            isLinkBtnClick = false;
-            show_hidden_link(hidden_input, showed_input);
-            let query = '&clang=' + $clang + '&tables=' + ytables;
-            openTableMap('REX_LINK_' + $id, query);
-            return false;
-        });
-        extern_button.unbind().bind('click', function () {
-            isLinkBtnClick = false;
-            show_hidden_link(hidden_input, showed_input);
-            let extern_link = prompt('Link', 'http://');
-            if (extern_link != 'http://' && extern_link != "" && extern_link != undefined) {
-                showed_input.val(extern_link);
-                hidden_input.val(extern_link);
-            }
-            return false;
-        });
-        mailto_button.unbind().bind('click', function () {
-            isLinkBtnClick = false;
-            show_hidden_link(hidden_input, showed_input);
-            let mailto_link = prompt('Mail', 'mailto:');
-            if (mailto_link != 'mailto:' && mailto_link != "" && mailto_link != undefined) {
-                showed_input.val(mailto_link);
-                hidden_input.val(mailto_link);
-            }
-            return false;
-        });
-        tel_button.unbind().bind('click', function () {
-            isLinkBtnClick = false;
-            show_hidden_link(hidden_input, showed_input);
-            let tel_link = prompt('Telephone', 'tel:');
-            if (tel_link != 'tel:' && tel_link != "" && tel_link != undefined) {
-                showed_input.val(tel_link);
-                hidden_input.val(tel_link);
-            }
-            return false;
-        });
-        delete_button.unbind().bind('click', function () {
-            isLinkBtnClick = false;
-            showed_input.val('');
-            hidden_input.val('');
-            return false;
-        });
-    });
-}
-
-function hidden_show_media(hidden_input, showed_input, id) {
-    if (hidden_input.attr('type') != 'text') {
-        hidden_input.data('link_id', hidden_input.attr('id'));
-        hidden_input.attr('id', 'REX_MEDIA_' + id);
-        showed_input.val('').attr('type', 'hidden');
-        hidden_input.val('').attr('type', 'text');
-    }
-}
-
-function show_hidden_link(hidden_input, showed_input) {
-    if (hidden_input.attr('type') == 'text') {
-        hidden_input.attr('id', hidden_input.data('link_id'));
-        showed_input.val('').attr('type', 'text');
-        hidden_input.val('').attr('type', 'hidden');
-    }
-}
-
-function openTableMap(id, param)
-{
-    if (typeof(id) == 'undefined')
-    {
-        id = '';
-    }
-    if (typeof(param) == 'undefined')
-    {
-        param = '';
-    }
-    return newLinkMapWindow('index.php?page=mform/tablemap&opener_input_field=' + id + param);
 }

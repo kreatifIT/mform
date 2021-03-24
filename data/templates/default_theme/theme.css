@@ -150,18 +150,25 @@
 }
 
 .mform .btn-white {
-    background-color: #fff;
-    color: #333;
-    border-radius: 0;
-    text-align: left;
-    font-size: 14px;
-    height: 50px;
-    line-height: 20px;
-    padding: 15px;
-    /*border-top: 2px solid #e8e8e8;*/
-    /*border-bottom: 2px solid #e8e8e8;*/
-    position: relative;
+background-color: #fff;
+color: #333;
+border-radius: 0;
+text-align: left;
+font-size: 14px;
+height: 50px;
+line-height: 20px;
+padding: 15px;
+border-top: 1px solid #e8e8e8;
+border-bottom: 1px solid #e8e8e8;
+position: relative;
+margin-bottom: 1px;
 }
+
+.mform .btn-white[aria-expanded=true] {
+    background: #4b9ad9;
+color: #fff;
+}
+
 
 .mform .btn-white:hover {
     background-color: #4b9ad9;
@@ -177,18 +184,40 @@
     background-color: #fafafa;
 }
 
-.mform .btn-white[aria-expanded=true]:after {
-
-}
 
 .mform .btn-white:after {
-    content: '';
+    content: '\f067';
     width: 10px;
     height: 10px;
-    outline: 1px solid #0ea7f4;
+    color: #4b9ad9;
     display: inline-block;
-    margin-left: 15px;
+    margin-left: 15px;float: right;font: normal normal normal 14px/1 FontAwesome;font-size: 20px;;
+    font-size: 15px;
 }
+
+.mform .btn-white:hover:after {
+
+    color: #FFF;
+
+}
+
+
+
+.mform .btn-white[aria-expanded="true"]:after {
+
+content: '\f068';
+    color: #fff;
+}
+
+
+.mform .collapse-wrapper  {
+    box-sizing: border-box;
+    padding-top: 10px;
+    display: block; 
+
+}
+
+
 
 .mform a.mblock-info-tooltip {
     margin-left: 7px;
@@ -199,7 +228,7 @@
 }
 
 .mform .panel-group[data-group-hide-toggle-links] {
-    margin-bottom: 0;
+    margin-bottom: 2rem;
     background-color: transparent;
 }
 
@@ -212,4 +241,9 @@
 
 .mform .panel-group[data-group-hide-toggle-links] .panel + .panel {
     margin-top: 0;
+}
+
+.mform .collapse {
+background: #fafafa;
+padding-bottom: 3px;
 }

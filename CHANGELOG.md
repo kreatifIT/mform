@@ -1,13 +1,43 @@
 # MForm - REDAXO Addon für Modul-Input-Formulare
 
-### Version 5.3.2
-* Docs for custom link rex_form @dpf-dd, @skerbis
-* Fixed: https://github.com/FriendsOfREDAXO/mform/issues/171
-* Description Style fix @IngoWinter
+### Version 6.0.3
+prepareCustomLink fixed
 
 
-### Version 5.3.1
-* fixed: JSON-Values could not be used in 5.3
+### Version 6.0.2
+- readme style fixes @crydotsnake 
+- remove .formcontrol on input fields type color @olien
+- some validation methods changed and calls deleted @skerbis
+
+
+### Version 6.0.1
+- added some docs
+- minor bugfixes
+
+
+### Version 6.0.0
+
+* use rex_factory_trait in MForm class
+* added YForm Links in custom_link
+* removed `parsley` validation @skerbis, you should use html validations: https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation
+* removed `closeCollapse`, `closeTab`, `closeAccordion`
+* change `addCollapse`, `addAccordion`, `addTab` functionality, use `addForm` to add content in this methods
+* added `addForm` method
+* added Media inUseCheck for media inside `custom_link` and `imagelist` in YForm
+* added some styling
+* added some Svensk översättning @interweave-media 
+* added some English translation @ynamite
+* added some docs @skerbis
+
+#### Breaking changes: 
+
+The REX_CUSTOM_LINK Var now saves the data in a regular REX_VAR. So the usage of REX_CUSTOM_LINK is not backward compatible. You should move the values from Linklist to a value field. 
+
+Parsley has been removed. AddValidation is functionless. 
+
+removed `closeCollapse`, `closeTab`, `closeAccordion`
+> Look at the new wrapper field examples
+
 
 ### Version 5.3
 

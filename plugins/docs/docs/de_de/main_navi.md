@@ -9,7 +9,6 @@
     - [Elementen Attribute zuweisen](elements_attributes.md)
     - [Elementen Parameter zuweisen](elements_params.md)
     - [Elementen Optionen zuweisen](elements_options.md)
-    - [Elementen Validierungen zuweisen](elements_validates.md)
     - [Elementen Default-Values / Placeholder zuweisen](elements_default_values.md)
 - Formular Elemente
 	- [Textareas, Text-Input- und Hidden-Elemente](form_input_hidden.md)
@@ -19,17 +18,20 @@
 	- [Tabs- und Fieldset-Elemente](form_fieldset_tabs.md)
 	- [Text- und HTML-Elemente](form_text_html.md)
 	- [Custom-Link Element](form_custom_link.md)
-	- [ImageList Element](form_imgagelist.md)
+	- [ImageList](form_imgagelist.md)
 - Template System
 	- [Templates für Modul-Input-Style](template_modul_input.md)
 - Modul-Input Demo
 	- [Modul-Input Redaxo 5.x](modul_demo_r5.x.md)
+- Wissenswertes
+        - [Tipps & Tricks](tipps_tricks.md)
 
 ---
 
 **Credits**
 
-Joachim Dörr (joachimdoerr)
-Alexander Walther (alexplusde)  
-Paul Götz (pixelfirma)  
-Tim Filler (elricco)
+- Joachim Dörr (joachimdoerr)
+- Alexander Walther (alexplusde)  
+- Paul Götz (pixelfirma)  
+- Tim Filler (elricco)
+- Thomas Skerbis (skerbis)

@@ -5,10 +5,13 @@
  * @license MIT
  */
 
+use MForm\Utils\MFormThemeHelper;
+
 if (rex_addon::exists('yform') &&
     rex_addon::get('yform')->isAvailable() &&
     rex_plugin::get('yform', 'manager')->isAvailable()) {
     rex_yform::addTemplatePath(rex_path::addon('mform', 'data/ytemplates'));
+    rex_extension::register('MEDIA_IS_IN_USE', 'MformYformHelper::isMediaInUse');
 }
 
 if (rex::isBackend()) {
@@ -54,22 +57,18 @@ if (rex::isBackend()) {
             rex_view::addCssFile($this->getAssetsUrl($css));
         }
     }
-
-    // add all parsley mform files
-    rex_view::addCssFile($this->getAssetsUrl('parsley/parsley.css'));
-    rex_view::addJsFile($this->getAssetsUrl('parsley/parsley.min.js'));
-    rex_view::addJsFile($this->getAssetsUrl('parsley/extra/validator/dateiso.js'));
-    rex_view::addJsFile($this->getAssetsUrl('parsley/extra/validator/words.js'));
-    rex_view::addJsFile($this->getAssetsUrl('parsley/i18n/de.js')); // TODO backend lang specific
     // add toggle files
     rex_view::addCssFile($this->getAssetsUrl('toggle/toggle.css'));
     rex_view::addJsFile($this->getAssetsUrl('toggle/toggle.js'));
     // widgets
     rex_view::addCssFile($this->getAssetsUrl('css/imglist.css'));
     rex_view::addJsFile($this->getAssetsUrl('js/imglist.js'));
+    rex_view::addJsFile($this->getAssetsUrl('js/customlink.js'));
     // add mform js
     rex_view::addJsFile($this->getAssetsUrl('mform.js'));
 
-    // reset mblock page count
-    $_SESSION['mform_count'] = 0;
+    // reset count per page init
+    if (rex_backend_login::hasSession()) {
+        rex_set_session('mform_count', 0);
+    }
 }
