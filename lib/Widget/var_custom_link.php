@@ -15,12 +15,12 @@ class rex_var_custom_link extends rex_var
      * @return string
      * @author Joachim Doerr
      */
-    public static function getCustomLinkText($value, $args = [])
+    public static function getCustomLinkText($value)
     {
         $valueName = $value;
         if (file_exists(rex_path::media($value)) === true) {
             // do nothing
-        } else if (filter_var($value, FILTER_VALIDATE_URL) === false && is_numeric($value)) {
+        } else if (filter_var($value, FILTER_VALIDATE_URL) === FALSE && is_numeric($value)) {
             // article!
             $art = rex_article::get((int)$value);
             if ($art instanceof rex_article) {
@@ -137,7 +137,7 @@ class rex_var_custom_link extends rex_var
         $mediaCategory = '';
         $types         = '';
 
-        if (filter_var($value, FILTER_VALIDATE_URL) === false && is_numeric($value)) {
+        if (filter_var($value, FILTER_VALIDATE_URL) === FALSE && is_numeric($value)) {
             $art = rex_article::get((int)$value);
             if ($art instanceof rex_article) {
                 $category = $art->getCategoryId();

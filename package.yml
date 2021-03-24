@@ -6,7 +6,7 @@ supportpage: https://github.com/FriendsOfREDAXO/mform
 page:
     title: 'translate:title'
     pjax: true
-    perm: mform[]
+    perm: admin[]
     icon: rex-icon fa-subway
     subpages:
         overview: { title: 'translate:overview' }

@@ -13,8 +13,5 @@ $mform->addImagelistField(1, array('label' => 'Bilder'));
 `REX_IMGLIST[id=1 widget=1] `
 
 In diesem Fall wird eine REX_VALUE[] befüllt. Es empfiehlt sich daher die Verwendung über mform. 
-<<<<<<< HEAD
-=======
 
 > **Achtung** Aktuell kann das Feld nicht mit mblock verwendet werden. 
->>>>>>> upstream/master

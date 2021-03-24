@@ -5,16 +5,6 @@ $(document).on('rex:ready', function () {
     mform_init();
 });
 
-$(document).on('be_table:row-added', function (event, params) {
-    if ($('div.custom-link').length) {
-        let custom_link = $('div.custom-link');
-        if (custom_link.length) {
-            console.debug(custom_link);
-            mform_custom_link(custom_link);
-        }
-    }
-});
-
 function mform_init() {
     let mform = $('.mform');
 

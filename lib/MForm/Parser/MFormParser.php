@@ -859,7 +859,6 @@ class MFormParser
         // default manipulations
         MFormItemManipulator::setVarAndIds($item); // transform ids for template usage
 
-        // kreatif
         foreach (array('intern' => 'enable', 'extern' => 'enable', 'media' => 'enable', 'mailto' => 'enable', 'tel' => 'disable') as $key => $value) {
             $value = (((isset($item->getAttributes()['data-' . $key])) ? $item->getAttributes()['data-' . $key] : $value) == 'enable');
             $key = ($key == 'extern') ? 'external' : $key;
