@@ -10,8 +10,6 @@ $parameters = array(
     'external' => ($this->getElement('extern') == 1),
     'intern' => ($this->getElement('intern') == 1),
     'phone' => ($this->getElement('phone') == 1),
-    'anchor_index' => $this->getElement('anchor_index'),
-    'ytables' => $this->getElement('ytables'),
     'types' => $this->getElement('types'),
     'category' => $this->getElement('category'),
     'media_category' => $this->getElement('media_category'),

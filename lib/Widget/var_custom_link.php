@@ -26,28 +26,6 @@ class rex_var_custom_link extends rex_var
             if ($art instanceof rex_article) {
                 $valueName = trim(sprintf('%s [%s]', $art->getName(), $art->getId()));
             }
-        } else if (substr($value, 0, 6) == 'ytable') {
-            // yform table!
-            list($table, $id) = explode('|', substr($value, 9));
-            $yArgs = rex_var::toArray($args['ytables']);
-            foreach ($yArgs as $yArg) {
-                if ($yArg[0] == $table) {
-                    $fields = $yArg[1];
-                    break;
-                }
-            }
-
-            if ($fields) {
-                $yTable = rex_yform_manager_table::get($table);
-                $stmt   = rex_yform_manager_dataset::query($table);
-                $stmt->resetSelect();
-                $stmt->selectRaw('id, CONCAT(' . $fields . ') AS label');
-                $stmt->where('id', $id);
-                $item = $stmt->findOne();
-                if ($item) {
-                    $valueName = rex_i18n::translate($yTable->getName()) . ': ' . $item->getValue('label');
-                }
-            }
         }
         return $valueName;
     }

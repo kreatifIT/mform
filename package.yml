@@ -18,13 +18,6 @@ page:
                 demo_extended: { title: 'translate:demo_extended' }
                 demo_expert: { title: 'translate:demo_expert' }
                 # demo_community: { title: 'translate:demo_community' }
-        tablemap:
-            title: translate:linkmap
-            main: true
-            perm: mform[tablemap]
-            popup: true
-            hidden: true
-            pjax: true
 
 requires:
     php: '>=7.3'
