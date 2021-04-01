@@ -15,9 +15,11 @@ if (rex_addon::exists('yform') &&
 }
 
 if (rex::isBackend()) {
-    rex_extension::register('PACKAGES_INCLUDED', function() {
-        rex::setProperty('mform_yform', \Kreatif\Form::factory('', false));
-    });
+    if (rex_addon::get('kreatif')->isAvailable()) {
+        rex_extension::register('PACKAGES_INCLUDED', function() {
+            rex::setProperty('mform_yform', \Kreatif\Form::factory('', false));
+        });
+    }
 
     // kreatif: yform saving
     function processYformForms(rex_extension_point $ep) {
