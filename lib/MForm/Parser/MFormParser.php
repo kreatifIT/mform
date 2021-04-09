@@ -987,11 +987,13 @@ class MFormParser
                     $args['valueName'] = $result['name'];
                     break;
                 }
+                $args['class'] = $item->getClass();
                 $templateElement->setElement(\rex_var_yform_table_data::getSingleWidget($id, 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' .
                     $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', $value, $args));
                 break;
             case 'yform-table-data-list':
                 $args['options'] = $results;
+                $args['class'] = $item->getClass();
                 $templateElement->setElement(\rex_var_yform_table_data::getMultipleWidget($id, 'REX_INPUT_VALUE[' . $item->getVarId()[0] . '][' .
                     $item->getVarId()[1] . '][' . $item->getVarId()[2] . ']', implode(',', $value), $args));
                 break;
