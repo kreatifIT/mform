@@ -969,6 +969,7 @@ class MFormParser
                 SELECT id, ' . $args['fieldName'] . ' AS name
                 FROM ' . $args['table'] . '
                 WHERE id IN(' . implode(',', $value) . ')
+                ORDER BY FIELD(id, ' . implode(',', $value) . ');
             ');
         }
         if (count($item->getVarId()) > 2) {
