@@ -1009,11 +1009,11 @@ class MFormParser
     {
         $valueId = $item->getVarId()[0];
         $parameter = $item->getParameter();
-        $yform = rex::getProperty('mform_yform');
+        $yform = \rex::getProperty('mform_yform');
         $yform->setObjectparams('form_action', '');
         $yform->setObjectparams('only_fields', true);
 
-        $fragment = new rex_fragment();
+        $fragment = new \rex_fragment();
         $fragment->setVar('yform', $yform);
         $fragment->parse($parameter['fragment_path']);
 
