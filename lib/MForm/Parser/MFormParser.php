@@ -1007,34 +1007,39 @@ class MFormParser
 
     private function generateYformForm(MFormItem $item)
     {
-        $valueId = $item->getVarId()[0];
         $parameter = $item->getParameter();
-        $yform = \rex::getProperty('mform_yform');
-        $yform->setObjectparams('form_action', '');
-        $yform->setObjectparams('only_fields', true);
+        $function  = $parameter['fieldsCallBack'];
+        unset($parameter['fieldsCallBack']);
 
-        $fragment = new \rex_fragment();
-        $fragment->setVar('yform', $yform);
-        $fragment->parse($parameter['fragment_path']);
+        $yform    = \rex::getProperty('mform_yform');
+        $elements = $yform->getObjectparams('form_elements');
 
-        $yform->setHiddenField('mform_yform_fragment_path', $parameter['fragment_path']);
-        $yform->setHiddenField('mform_yform_value_id', $valueId);
+        $parameter['yform']    = $yform;
+        $parameter['value_id'] = $item->getVarId()[0];
+        $yform = call_user_func($function, $parameter);
 
-        if ($yform->isSend()) {
-            $output = $yform->regenerateForm();
-        } else {
-            if ($item->getValue()) {
-                $yform->setObjectparams('data', $item->getValue());
-            }
-            $output = $yform->getForm();
+        if (!($yform instanceof \rex_yform)) {
+            throw new \ErrorException('Return value of '. implode('::', $function) .' must be $yform');
         }
 
-        $element = new MFormElement();
-        $element->setOutput($output)
-            ->setAttributes($this->parseAttributes($item->getAttributes()))
-            ->setClass($item->getClass()); // set output to replace in template
-        // add to output element array
-        $this->elements[] = $this->parseElement($element, $item->getType());
+        $fields = array_slice($yform->getObjectparams('form_elements'), count($elements));
+        $callbacks = array_filter((array) $yform->getObjectparams('mform_field_callbacks'));
+        $mapping = array_filter((array) $yform->getObjectparams('mform_field_mapping'));
+        $values = array_filter((array) $yform->getObjectparams('mform_values'));
+
+        foreach ($fields as $field) {
+            $element = new MFormElement();
+            $element->setOutput("{{YFORM-FIELD-{$field['name']}}}");
+            $mapping[$field['name']] = $parameter['value_id'];
+            // add to output element array
+            $this->elements[] = $this->parseElement($element, $item->getType());
+        }
+
+        $callbacks[] = ['function' => $function, 'value_id' => $parameter['value_id']];
+        $values = array_merge($values, (array)$item->getValue());
+        $yform->setObjectparams('mform_field_callbacks', $callbacks);
+        $yform->setObjectparams('mform_field_mapping', $mapping);
+        $yform->setObjectparams('mform_values', $values);
         return $this;
     }
 

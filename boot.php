@@ -15,37 +15,74 @@ if (rex_addon::exists('yform') &&
 }
 
 if (rex::isBackend()) {
-    if (rex_addon::get('kreatif')->isAvailable()) {
-        rex_extension::register('PACKAGES_INCLUDED', function() {
-            rex::setProperty('mform_yform', \Kreatif\Form::factory('', false));
-        });
-    }
-
     // kreatif: yform saving
-    function processYformForms(rex_extension_point $ep) {
-        $fragPath = rex_post('mform_yform_fragment_path', 'string');
-        $valueId = rex_post('mform_yform_value_id', 'int');
+    if (rex_addon::get('kreatif')->isAvailable()) {
+        function processYformForms(rex_extension_point $ep) {
+            $callbacks = json_decode(rex_post('mform_field_callbacks', 'string'), true);
+            $mapping = json_decode(rex_post('mform_field_mapping', 'string'), true);
 
-        if ($fragPath && $valueId) {
-            $sql = rex_sql::factory();
-            $sliceId = $ep->getParam('slice_id');
-            $yform = rex::getProperty('mform_yform');
-            $fragment = new rex_fragment();
-            $fragment->setVar('yform', $yform);
-            $fragment->parse($fragPath);
+            if ($callbacks && $mapping) {
+                $sql = rex_sql::factory();
+                $sql->setTable('rex_article_slice');
+                $sliceId = $ep->getParam('slice_id');
 
-            $yform->getForm();
-            $values = $yform->getFormEmailValues();
+                $yform = \Kreatif\Form::factory('slice-yform-'. $sliceId, false);
+                $yform->setObjectparams('form_fragment', 'kreatif/backend/mform/empty_mform_form.php');
+                $yform->setObjectparams('use_form_tag', false);
+                $yform->setObjectparams('send', 1);
 
-            $sql->setTable('rex_article_slice');
-            $sql->setValue('value' . $valueId, json_encode($values));
-            $sql->setWhere(['id' => $sliceId]);
-            $sql->update();
+                foreach ($callbacks as $parameter) {
+                    $parameter['yform'] = $yform;
+                    $yform = call_user_func($parameter['function'], $parameter);
+                }
+
+                $yform->getForm();
+                $values = $yform->getFormEmailValues();
+
+                $_values = [];
+                foreach ($mapping as $fieldname => $valueId) {
+                    $_values[$valueId][$fieldname] = $values[$fieldname];
+                }
+                foreach ($_values as $valueId => $values) {
+                    $sql->setValue('value' . $valueId, json_encode($values));
+                }
+                $sql->setWhere(['id' => $sliceId]);
+                $sql->update();
+            }
         }
-    }
 
-    rex_extension::register('SLICE_ADDED', 'processYformForms');
-    rex_extension::register('SLICE_UPDATED', 'processYformForms');
+        rex_extension::register('STRUCTURE_CONTENT_BEFORE_SLICES', function(rex_extension_point $ep) {
+            $yform = \Kreatif\Form::factory('slice-yform-'. $ep->getParam('slice_id'), false);
+            $yform->setObjectparams('form_fragment', 'kreatif/backend/mform/empty_mform_form.php');
+            $yform->setObjectparams('use_form_tag', false);
+            rex::setProperty('mform_yform', $yform);
+        });
+        rex_extension::register('mform.showOutput', function(rex_extension_point $ep) {
+            $output = $ep->getSubject();
+            $yform = rex::getProperty('mform_yform');
+            $callbacks = $yform->getObjectparams('mform_field_callbacks');
+            $mapping = $yform->getObjectparams('mform_field_mapping');
+            $values = $yform->getObjectparams('mform_values');
+
+            if ($yform->isSend()) {
+                $yform->regenerateForm();
+            } else {
+                $yform->setObjectparams('data', $values);
+                $yform->getForm();
+            }
+            $fields = $yform->getValueFields();
+
+            foreach ($fields as $fieldname => $field) {
+                $fieldContent = '<div class="form-fields">'. $field->getElement('field_output') .'</div>';
+                $output = str_replace("{{YFORM-FIELD-{$fieldname}}}", $fieldContent, $output);
+            }
+            $output .= '<input type="hidden" name="mform_field_callbacks" value="'. rex_escape(json_encode($callbacks), 'html_attr') .'"/>';
+            $output .= '<input type="hidden" name="mform_field_mapping" value="'. rex_escape(json_encode($mapping), 'html_attr') .'"/>';
+            $ep->setSubject($output);
+        });
+        rex_extension::register('SLICE_ADDED', 'processYformForms');
+        rex_extension::register('SLICE_UPDATED', 'processYformForms');
+    }
 
 
     // check theme css is exists

@@ -47,7 +47,7 @@ class MForm extends MFormElements
         // init obj
         $parser = new MFormParser();
         // parse elements
-        return $parser->parse($this->getItems(), $this->theme, $this->debug);
+        return rex_extension::registerPoint(new rex_extension_point('mform.showOutput', $parser->parse($this->getItems(), $this->theme, $this->debug)));
     }
 
     /**
