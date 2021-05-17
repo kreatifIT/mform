@@ -1,6 +1,6 @@
 let mform_custom_link = '.rex-js-widget-customlink';
 
-$(document).on('rex:ready', function (e, container) {
+$(document).on('rex:ready be_table:row-added', function (e, container) {
     if (container.find(mform_custom_link).length) {
         container.find(mform_custom_link).each(function () {
             customlink_init_widget($(this).find('.input-group.custom-link'));
