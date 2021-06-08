@@ -61,16 +61,4 @@ class MForm extends MFormElements
         $class = static::getFactoryClass();
         return new $class($template, $debug);
     }
-
-    /**
-     * @param null $template
-     * @param bool $debug
-     * @return MForm
-     * @author Joachim Doerr
-     */
-    public static function factory($template = null, $debug = false)
-    {
-        $class = static::getFactoryClass();
-        return new $class($template, $debug);
-    }
 }
