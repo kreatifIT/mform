@@ -98,7 +98,7 @@ class MFormParser
         foreach ($items as $k => $itm) {
             if ($k > $key && ($itm->getGroup() == $item->getGroup() && $itm->getType() == 'tab')) {
                 // add navigation item
-                $class = $item->getClass();
+                $class = $itm->getClass();
                 $value = '';
                 $element = new MFormElement();
                 $element->setId('tabgr' . $itm->getGroup() . 'tabid' . $itm->getGroupCount() . '_' . rex_session('mform_count'));
@@ -535,9 +535,15 @@ class MFormParser
                 }
             }
         }
+        /* Selected fix Skerbis */
+        $items_selected = [];
+        $items_selected = json_decode($item->stringValue, true);
 
+        if  ($items_selected && in_array((string)$key, $items_selected)){
+             $element->setAttributes(' selected');
+        }
         // set default value or selected
-        if ($selected && ($key == $itemValue or ($item->getMode() == 'add' && $key == $item->getDefaultValue()))) {
+        if ($selected && ((string)$key == (string)$itemValue or ($item->getMode() == 'add' && (string)$key == (string)$item->getDefaultValue()))) {
             $element->setAttributes(' selected'); // add attribute selected
         }
 

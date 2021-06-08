@@ -1,5 +1,16 @@
 # MForm - REDAXO Addon für Modul-Input-Formulare
 
+### Version 6.0.6
+
+- fixed: delete all entries in imagelist @ynamite 
+- fixed: wrong var prevents cusrtom classes on tabs @bitshiftersgmbh 
+
+### Version 6.0.4
+
+- Fixed missing external link in widget
+- Some minor fixes
+thx @lexplatt  @Hirbod
+
 ### Version 6.0.3
 prepareCustomLink fixed
 
@@ -20,7 +31,7 @@ prepareCustomLink fixed
 * use rex_factory_trait in MForm class
 * added YForm Links in custom_link
 * removed `parsley` validation @skerbis, you should use html validations: https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation
-* removed `closeCollapse`, `closeTab`, `closeAccordion`
+* deprecated: `closeCollapse`, `closeTab`, `closeAccordion`
 * change `addCollapse`, `addAccordion`, `addTab` functionality, use `addForm` to add content in this methods
 * added `addForm` method
 * added Media inUseCheck for media inside `custom_link` and `imagelist` in YForm
